@@ -1,14 +1,21 @@
-package hashtable;
+package ru.hse.kostya.java.hashtable;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class HashTableTest {
 
+    private HashTable t;
+
+    @BeforeEach
+    void initHashTable() {
+        t = new HashTable();
+    }
+
     @Test
     void size() {
-        HashTable t = new HashTable();
         assertEquals(0, t.size());
         t.put("a", "b");
         assertEquals(1, t.size());
@@ -20,7 +27,6 @@ class HashTableTest {
 
     @Test
     void contains() {
-        HashTable t = new HashTable();
         assertFalse(t.contains("a"));
         t.put("a", "b");
         assertTrue(t.contains("a"));
@@ -28,7 +34,6 @@ class HashTableTest {
 
     @Test
     void get() {
-        HashTable t = new HashTable();
         assertNull(t.get("a"));
         t.put("a", "b");
         assertNotNull(t.get("a"));
@@ -37,7 +42,6 @@ class HashTableTest {
 
     @Test
     void put() {
-        HashTable t = new HashTable();
         t.put("a", "b");
         assertEquals("b", t.get("a"));
         assertEquals("b", t.put("a", "c"));
@@ -46,7 +50,6 @@ class HashTableTest {
 
     @Test
     void remove() {
-        HashTable t = new HashTable();
         t.put("a", "b");
         assertNull(t.remove("b"));
         assertEquals("b", t.remove("a"));
@@ -55,7 +58,6 @@ class HashTableTest {
 
     @Test
     void clear() {
-        HashTable t = new HashTable();
         t.put("a", "b");
         t.clear();
         assertTrue(t.size() == 0);

@@ -1,14 +1,21 @@
-package hashtable;
+package ru.hse.kostya.java.hashtable;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ListTest {
 
+    private List l;
+
+    @BeforeEach
+    void initList() {
+        l = new List();
+    }
+
     @Test
     void size() {
-        List l = new List();
         assertEquals(0, l.size());
         l.put("a", "b");
         assertEquals(1, l.size());
@@ -20,7 +27,6 @@ class ListTest {
 
     @Test
     void empty() {
-        List l = new List();
         assertTrue(l.empty());
         l.put("a", "b");
         assertFalse(l.empty());
@@ -28,7 +34,6 @@ class ListTest {
 
     @Test
     void contains() {
-        List l = new List();
         assertFalse(l.contains("a"));
         l.put("a", "b");
         assertTrue(l.contains("a"));
@@ -36,7 +41,6 @@ class ListTest {
 
     @Test
     void get() {
-        List l = new List();
         assertNull(l.get("a"));
         l.put("a", "b");
         assertNotNull(l.get("a"));
@@ -45,7 +49,6 @@ class ListTest {
 
     @Test
     void put() {
-        List l = new List();
         l.put("a", "b");
         assertNotNull(l.get("a"));
         assertEquals("b", l.get("a"));
@@ -57,7 +60,6 @@ class ListTest {
 
     @Test
     void remove() {
-        List l = new List();
         l.put("a", "b");
         l.put("b", "c");
         l.remove("b");
@@ -68,7 +70,6 @@ class ListTest {
 
     @Test
     void popHeadElement() {
-        List l = new List();
         assertNull(l.popHeadElement());
         l.put("a", "b");
         assertEquals("a", l.popHeadElement().getKey());
@@ -77,7 +78,6 @@ class ListTest {
 
     @Test
     void clear() {
-        List l = new List();
         assertTrue(l.empty());
         l.put("a", "b");
         l.clear();
