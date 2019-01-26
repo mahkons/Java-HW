@@ -9,7 +9,7 @@ import java.util.HashMap;
  */
 public class Trie implements ISerializable {
 
-    private class TrieNode {
+    private static class TrieNode {
         private int howManyStartsInNode;
         private boolean someStringEndsHere;
         private HashMap<Character, TrieNode> tableOfChildren =
