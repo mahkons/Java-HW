@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -62,12 +64,24 @@ class TrieTest {
     @Test
     void serializeAndDeserialize() {
         //decided to check them together
-        //due to difficulties of
-        var buffer = new byte[1000];
-        var byteTree = new ByteArrayInputStream()
+        //due to difficulties of changing tests in case of
+        //      serialisation algorithm modification
+        var byteArrayOutputStream = new ByteArrayOutputStream(1000);
+        try {
+            trie.serialize(byteArrayOutputStream);
+            trie.remove("Aa");
+
+            trie.deserialize(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
+            assertEquals(2, trie.size());
+            assertTrue(trie.contains("AAAB"));
+            assertTrue(trie.contains("Aa"));
+
+        } catch (IOException io) {
+            // shouldn't get here. ByteArrayInputStream doesn't depend on any external resources
+            // so it is programmer's error
+            assert(false);
+        }
+
     }
 
-    @Test
-    void deserialize() {
-    }
 }
