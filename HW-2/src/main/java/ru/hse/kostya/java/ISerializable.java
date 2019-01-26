@@ -12,6 +12,7 @@ import java.io.OutputStream;
 public interface ISerializable {
 
     void serialize(OutputStream out) throws IOException;
+
     void deserialize(InputStream in) throws IOException;
 
 }

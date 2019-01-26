@@ -62,7 +62,7 @@ class TrieTest {
     }
 
     @Test
-    void serializeAndDeserialize() {
+    void serializeAndDeserialize() throws IOException {
         //decided to check them together
         //due to difficulties of changing tests in case of
         //      serialisation algorithm modification
@@ -79,7 +79,8 @@ class TrieTest {
         } catch (IOException io) {
             // shouldn't get here. ByteArrayInputStream doesn't depend on any external resources
             // so it is programmer's error
-            assert(false);
+           // assert(false);
+            throw new IOException(io);
         }
 
     }

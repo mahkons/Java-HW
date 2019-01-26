@@ -9,7 +9,7 @@ import java.util.HashMap;
  */
 public class Trie implements ISerializable {
 
-    private class TrieNode implements ISerializable {
+    private class TrieNode {
         private int howManyStartsInNode;
         private boolean someStringEndsHere;
         private HashMap<Character, TrieNode> tableOfChildren =
@@ -29,32 +29,29 @@ public class Trie implements ISerializable {
             tableOfChildren.remove(c);
         }
 
-        @Override
-        public void serialize(OutputStream out) throws IOException {
-            try (var objectOutStream = new ObjectOutputStream(out)) {
-                objectOutStream.writeInt(howManyStartsInNode);
-                objectOutStream.writeBoolean(someStringEndsHere);
-                objectOutStream.writeInt(tableOfChildren.size());
-                for (var element : tableOfChildren.entrySet()) {
-                    objectOutStream.writeChar(element.getKey());
-                    element.getValue().serialize(objectOutStream);
-                }
+        //Trie Node doesn't implement ISerializable
+        //Cause it is more comfortable to work with ObjectStreams
+        //And it is private so it doesn't matter outside Trie class
+        private void serialize(ObjectOutputStream objectOutStream) throws IOException {
+            objectOutStream.writeInt(howManyStartsInNode);
+            objectOutStream.writeBoolean(someStringEndsHere);
+            objectOutStream.writeInt(tableOfChildren.size());
+            for (var element : tableOfChildren.entrySet()) {
+                objectOutStream.writeChar(element.getKey());
+                element.getValue().serialize(objectOutStream);
             }
         }
 
-        @Override
-        public void deserialize(InputStream in) throws IOException {
-            try (var objectInStream = new ObjectInputStream(in)) {
-                howManyStartsInNode = objectInStream.readInt();
-                someStringEndsHere = objectInStream.readBoolean();
-                tableOfChildren.clear();
-                int numberOfChildren = objectInStream.readInt();
-                for (int i = 0; i < numberOfChildren; i++) {
-                    var trieNode = new TrieNode();
-                    char charOnEdge = objectInStream.readChar();
-                    tableOfChildren.put(charOnEdge, trieNode);
-                    trieNode.deserialize(objectInStream);
-                }
+        private void deserialize(ObjectInputStream objectInStream) throws IOException {
+            howManyStartsInNode = objectInStream.readInt();
+            someStringEndsHere = objectInStream.readBoolean();
+            tableOfChildren.clear();
+            int numberOfChildren = objectInStream.readInt();
+            for (int i = 0; i < numberOfChildren; i++) {
+                var trieNode = new TrieNode();
+                char charOnEdge = objectInStream.readChar();
+                tableOfChildren.put(charOnEdge, trieNode);
+                trieNode.deserialize(objectInStream);
             }
         }
     }
