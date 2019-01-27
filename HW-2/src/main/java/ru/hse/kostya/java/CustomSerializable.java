@@ -14,7 +14,6 @@ public interface CustomSerializable {
     /**
      * Writes object to OutputStream.
      * Strictly adheres to the fixed format.
-     * @throws IOException
      */
     void serialize(OutputStream out) throws IOException;
 
