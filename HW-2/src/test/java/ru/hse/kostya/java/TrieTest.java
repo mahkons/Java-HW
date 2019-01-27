@@ -79,8 +79,7 @@ class TrieTest {
         } catch (IOException io) {
             // shouldn't get here. ByteArrayInputStream doesn't depend on any external resources
             // so it is programmer's error
-           // assert(false);
-            throw new IOException(io);
+            throw io;
         }
 
     }

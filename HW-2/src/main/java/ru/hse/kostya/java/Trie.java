@@ -7,7 +7,7 @@ import java.util.HashMap;
  *Trie implemented as a rooted tree with symbols on edges.
  *Non-trivial methods works in linear from input time
  */
-public class Trie implements ISerializable {
+public class Trie implements CustomSerializable {
 
     private static class TrieNode {
         private int howManyStartsInNode;
@@ -29,7 +29,7 @@ public class Trie implements ISerializable {
             tableOfChildren.remove(c);
         }
 
-        //Trie Node doesn't implement ISerializable
+        //Trie Node doesn't implement CustomSerializable
         //Cause it is more comfortable to work with ObjectStreams
         //And it is private so it doesn't matter outside Trie class
         private void serialize(ObjectOutputStream objectOutStream) throws IOException {
@@ -123,6 +123,7 @@ public class Trie implements ISerializable {
         if (element == null || !contains(element)) {
             return false;
         }
+        size--;
         TrieNode positionNow = root;
         root.howManyStartsInNode--;
         for (char ch : element.toCharArray()) {
@@ -132,13 +133,12 @@ public class Trie implements ISerializable {
             if (positionNow.next(ch).howManyStartsInNode == 1) {
                 //branch of trie should be deleted
                 positionNow.removeChild(ch);
-                break;
+                return true;
             }
             positionNow = positionNow.next(ch);
             positionNow.howManyStartsInNode--;
         }
         positionNow.someStringEndsHere = false;
-        size--;
         return true;
     }
 
