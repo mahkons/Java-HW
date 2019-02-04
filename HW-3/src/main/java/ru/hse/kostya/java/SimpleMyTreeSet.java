@@ -74,13 +74,13 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         //and so left and right cannot be null when requested
         private void remove(@NotNull Object element) {
             if (compareValues(content, element) > 0) {
-                if (left.equals(element)) {
+                if (left.content.equals(element)) {
                     left = merge(left.left, left.right);
                 } else {
                     left.remove(element);
                 }
             } else {
-                if (right.equals(element)) {
+                if (right.content.equals(element)) {
                     right = merge(right.left, right.right);
                 } else {
                     right.remove(element);
@@ -380,7 +380,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         modCount++;
         size--;
 
-        if (root.equals(element)) {
+        if (root.content.equals(element)) {
             root = merge(root.left, root.right);
             return true;
         }

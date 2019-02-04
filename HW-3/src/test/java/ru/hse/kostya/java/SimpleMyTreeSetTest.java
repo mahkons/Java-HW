@@ -12,7 +12,7 @@ class SimpleMyTreeSetTest {
     private SimpleMyTreeSet<String> simpleSetWithComparator = new SimpleMyTreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     @BeforeEach
-    private void setUp() {
+    void setUp() {
         simpleSetNoComparator.add("aaa");
         simpleSetNoComparator.add("AAA");
         simpleSetNoComparator.add("BBB");
@@ -23,81 +23,81 @@ class SimpleMyTreeSetTest {
     }
 
     @Test
-    private void size() {
+    void size() {
         assertEquals(0, emptyTreeSet.size());
         assertEquals(3, simpleSetNoComparator.size());
     }
 
     @Test
-    private void iterator() {
+    void iterator() {
     }
 
     @Test
-    private void descendingIterator() {
+    void descendingIterator() {
     }
 
     @Test
-    private void descendingSet() {
+    void descendingSet() {
     }
 
     @Test
-    private void contains() {
+    void contains() {
         assertFalse(emptyTreeSet.contains("aaa"));
         assertFalse(simpleSetNoComparator.contains("aaA"));
         assertTrue(simpleSetNoComparator.contains("AAA"));
     }
 
     @Test
-    private void add() {
+    void add() {
         assertTrue(simpleSetNoComparator.add("bbb"));
         assertEquals("bbb", simpleSetNoComparator.last());
         assertFalse(simpleSetNoComparator.add("aaa"));
     }
 
     @Test
-    private void remove() {
+    void remove() {
         assertTrue(simpleSetNoComparator.remove("aaa"));
         assertEquals("BBB", simpleSetNoComparator.last());
         assertFalse(simpleSetNoComparator.remove("bbb"));
     }
 
     @Test
-    private void first() {
+    void first() {
         assertEquals("AAA", simpleSetNoComparator.first());
         simpleSetNoComparator.remove("AAA");
         assertEquals("BBB", simpleSetNoComparator.first());
     }
 
     @Test
-    private void last() {
+    void last() {
         assertEquals("aaa", simpleSetNoComparator.last());
         simpleSetNoComparator.remove("aaa");
         assertEquals("BBB", simpleSetNoComparator.last());
     }
 
     @Test
-    private void lower() {
+    void lower() {
         assertEquals("AAA", simpleSetNoComparator.lower("BBB"));
         assertNull(simpleSetNoComparator.lower("AAA"));
         assertEquals("aaa", simpleSetNoComparator.lower("zzz"));
     }
 
     @Test
-    private void floor() {
+    void floor() {
         assertEquals("BBB", simpleSetNoComparator.floor("BBB"));
         assertNull(simpleSetNoComparator.floor("A"));
         assertEquals("aaa", simpleSetNoComparator.floor("zzz"));
     }
 
     @Test
-    private void higher() {
+    void higher() {
         assertEquals("aaa", simpleSetNoComparator.higher("BBB"));
         assertNull(simpleSetNoComparator.higher("aaa"));
         assertEquals("AAA", simpleSetNoComparator.higher("A"));
     }
 
     @Test
-    private void ceiling() {
+    void ceiling() {
         assertEquals("BBB", simpleSetNoComparator.ceiling("BBB"));
         assertNull(simpleSetNoComparator.ceiling("zzz"));
         assertEquals("AAA", simpleSetNoComparator.ceiling("A"));
