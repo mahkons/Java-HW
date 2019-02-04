@@ -8,7 +8,6 @@ import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 
-
 /**
  * MyTreeSet implementation using unbalanced search tree.
  * Compares elements by comparator, given in constructor or
@@ -400,7 +399,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
             return null;
         }
 
-        return root.first().content;
+        return isReversed ? root.last().content : root.first().content;
     }
 
     /**
@@ -413,7 +412,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
             return null;
         }
 
-        return root.last().content;
+        return isReversed ? root.first().content : root.last().content;
     }
 
     /** {@link MyTreeSet#lower(E)}  */
@@ -422,7 +421,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         if (root == null) {
             return null;
         }
-        Node lowerNode = root.lowerNode(element);
+        Node lowerNode = isReversed ? root.upperNode(element) : root.lowerNode(element);
         if (lowerNode == null) {
            return null;
         }
@@ -444,7 +443,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         if (root == null) {
             return null;
         }
-        Node upperNode = root.upperNode(element);
+        Node upperNode = isReversed ? root.lowerNode(element) : root.upperNode(element);
         if (upperNode == null) {
             return null;
         }
