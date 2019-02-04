@@ -135,6 +135,10 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
             return current.parent;
         }
 
+        /**
+         * Finds Node, containing greatest element smaller than given element.
+         * Returns null if there is no such
+         */
         @Nullable private Node lowerNode(@NotNull E element) {
             if (compareValues(element, content) > 0) {
                 if (right != null) {
@@ -154,6 +158,11 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
                 }
             }
         }
+
+        /**
+         * Finds Node, containing least element bigger than given element.
+         * Returns null if there is no such
+         */
         @Nullable private Node upperNode(@NotNull E element) {
             if (compareValues(element, content) < 0) {
                 if (left != null) {
@@ -174,6 +183,9 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
             }
         }
 
+        /**
+         * Finds Node with the least value in subtree.
+         */
         @NotNull private Node first() {
             if (left == null) {
                 return this;
@@ -181,6 +193,9 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
             return left.first();
         }
 
+        /**
+         * Finds Node with the greatest value in subtree.
+         */
         @NotNull private Node last() {
             if (right == null) {
                 return this;
@@ -189,11 +204,21 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         }
     }
 
+    /**
+     * Constructor with no comparator.
+     * Compares using Comparable interface
+     * Initially tree is empty
+     */
     public SimpleMyTreeSet() {
         isReversed = false;
         comparator = null;
     }
 
+
+    /**
+     * Constructor with give comparator.
+     * Initially tree is empty
+     */
     public SimpleMyTreeSet(@NotNull Comparator<? super E> comparator) {
         isReversed = false;
         this.comparator = comparator;
@@ -213,19 +238,27 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
 
+    /**
+     * Iterator for SimpleTreeSet.
+     * Iterator can be in reversed order as well.
+     * Iterator throws ConcurrentModificationException if used after modifying tree
+     */
     private class TreeSetIterator implements Iterator<E> {
         @Nullable private Node nextElement;
         private final boolean isReversed;
-        private final int expectedModCound;
+        private final int expectedModCount;
 
         private TreeSetIterator(@Nullable Node nextElement, boolean isReversed) {
             this.isReversed = isReversed;
             this.nextElement = nextElement;
-            expectedModCound = modCount;
+            expectedModCount = modCount;
         }
 
+        /**
+         * Checks whether tree was modified since iterator construction
+         */
         private boolean isNotValid() {
-            return expectedModCound != modCount;
+            return expectedModCount != modCount;
         }
 
         @Override
@@ -236,6 +269,9 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
             return nextElement != null;
         }
 
+        /**
+         * Gets next element and moves iterator.
+         */
         @Override
         @NotNull public E next() {
             if (isNotValid()) {
@@ -250,6 +286,9 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         }
     }
 
+    /**
+     * Creates iterator, that starts from the smallest element in the tree.
+     */
     @Override
     @NotNull public Iterator<E> iterator() {
         Node startPoint = null;
@@ -260,6 +299,10 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
 
+    /**
+     * Creates iterator, that starts from the biggest element in the tree and
+     *  moves in direction of smallest one
+     */
     @Override
     @NotNull public Iterator<E> descendingIterator() {
         Node startPoint = null;
@@ -269,11 +312,21 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return new TreeSetIterator(startPoint, !isReversed);
     }
 
+
+    /**
+     * Returns a reverse order view of the elements contained in this set.
+     * The descending set is backed by this set, so changes to the set are reflected
+     *      in the descending set, and vice-versa.
+     */
     @Override
     @NotNull public MyTreeSet<E> descendingSet() {
         return new SimpleMyTreeSet<>(comparator, !isReversed, size, modCount + 1, root);
     }
 
+    /**
+     * Checks whether set contains given element
+     */
+    //faster than contains from AbstractSet
     @Override
     public boolean contains(@NotNull Object element) {
         if (root == null) {
@@ -295,6 +348,9 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return false;
     }
 
+    /**
+     * Adds given element in set if it have not been in already
+     */
     @Override
     public boolean add(@NotNull E element) {
         if (contains(element)) {
@@ -312,6 +368,9 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return true;
     }
 
+    /**
+     * Removes element from set if it was in set.
+     */
     @SuppressWarnings("ConstantConditions")
     //if tree contains an element, root cannot be null
     @Override
@@ -331,6 +390,10 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return true;
     }
 
+    /**
+     * Returns smallest element in set
+     *      or null if it is empty
+     */
     @Override
     @Nullable public E first() {
         if (root == null) {
@@ -340,6 +403,10 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return root.first().content;
     }
 
+    /**
+     * Returns greatest element in set
+     *      or null if it is empty
+     */
     @Override
     @Nullable public E last() {
         if (root == null) {
@@ -349,6 +416,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return root.last().content;
     }
 
+    /** {@link MyTreeSet#lower(E)}  */
     @Override
     @Nullable public E lower(@NotNull E element) {
         if (root == null) {
@@ -361,6 +429,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return lowerNode.content;
     }
 
+    /** {@link MyTreeSet#floor(E)}  */
     @Override
     @Nullable public E floor(@NotNull E element) {
         if (contains(element)) {
@@ -369,6 +438,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return lower(element);
     }
 
+    /** {@link MyTreeSet#higher(E)}  */
     @Override
     @Nullable public E higher(@NotNull E element) {
         if (root == null) {
@@ -381,6 +451,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return upperNode.content;
     }
 
+    /** {@link MyTreeSet#ceiling(E)}  */
     @Override
     @Nullable public E ceiling(@NotNull E element) {
         if (contains(element)) {
@@ -389,6 +460,11 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return higher(element);
     }
 
+    /**
+     * Compare given values using comparator ot
+     *      if there is no comparator, comparable interface.
+     * @throws ClassCastException if none of those abilities was given
+     */
     @SuppressWarnings("unchecked")
     private int compareValues(@NotNull Object a, @NotNull Object b) {
         if (comparator != null) {
@@ -398,6 +474,10 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return ((Comparable<? super E>)a).compareTo((E)b);
     }
 
+    /**
+     * Merges two trees.
+     * NB! all elements in a ought to be strictly smaller than elements in b
+     */
     @Nullable private Node merge(@Nullable Node a, @Nullable Node b) {
         if (a == null) {
             return b;
