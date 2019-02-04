@@ -1,12 +1,12 @@
 package ru.hse.kostya.java;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.AbstractSet;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * MyTreeSet implementation using unbalanced search tree.
@@ -223,7 +223,8 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         this.comparator = comparator;
     }
 
-    private SimpleMyTreeSet(@Nullable Comparator<? super E> comparator, boolean isReversed, int size, int modCount, @Nullable Node root) {
+    private SimpleMyTreeSet(@Nullable Comparator<? super E> comparator, boolean isReversed,
+                            int size, int modCount, @Nullable Node root) {
         this.comparator = comparator;
         this.isReversed = isReversed;
         this.size = size;
@@ -254,7 +255,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         }
 
         /**
-         * Checks whether tree was modified since iterator construction
+         * Checks whether tree was modified since iterator construction.
          */
         private boolean isNotValid() {
             return expectedModCount != modCount;
@@ -300,7 +301,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
 
     /**
      * Creates iterator, that starts from the biggest element in the tree and
-     *  moves in direction of smallest one
+     *  moves in direction of smallest one.
      */
     @Override
     @NotNull public Iterator<E> descendingIterator() {
@@ -323,7 +324,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     /**
-     * Checks whether set contains given element
+     * Checks whether set contains given element.
      */
     //faster than contains from AbstractSet
     @Override
@@ -339,8 +340,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
             }
             if (compareValues(element, current.content) > 0) {
                 current = current.right;
-            }
-            else {
+            } else {
                 current = current.left;
             }
         }
@@ -348,7 +348,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     /**
-     * Adds given element in set if it have not been in already
+     * Adds given element in set if it have not been in already.
      */
     @Override
     public boolean add(@NotNull E element) {
@@ -391,7 +391,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
 
     /**
      * Returns smallest element in set
-     *      or null if it is empty
+     *      or null if it is empty.
      */
     @Override
     @Nullable public E first() {
@@ -404,7 +404,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
 
     /**
      * Returns greatest element in set
-     *      or null if it is empty
+     *      or null if it is empty.
      */
     @Override
     @Nullable public E last() {
