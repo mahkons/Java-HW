@@ -1,38 +1,55 @@
 package ru.hse.kostya.java;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.AbstractSet;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 
 
+/**
+ * MyTreeSet implementation using unbalanced search tree.
+ * Compares elements by comparator, given in constructor or
+ *      if there was no such comparator uses Comparable interface
+ */
 public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
 
 
-    private final Comparator<? super E> comparator;
+    @Nullable private final Comparator<? super E> comparator;
     private final boolean isReversed;
 
     private int size = 0;
     private int modCount = 0;
-    private Node root;
+    @Nullable private Node root;
 
+    /**
+     * Node of binary tree.
+     * Comparing to current element, every node in left subtree contains smaller elements,
+     *  in right subtree greater elements
+     */
     private class Node {
 
-        private E content;
-        private Node left;
-        private Node right;
-        private Node parent;
+        @NotNull private E content;
+        @Nullable private Node left;
+        @Nullable private Node right;
+        @Nullable private Node parent;
 
-        private Node(E content) {
+        private Node(@NotNull E content) {
             this.content = content;
         }
 
-        private Node(E content, Node parent) {
+        private Node(@NotNull E content, @NotNull Node parent) {
             this.content = content;
             this.parent = parent;
         }
 
-        private void add(E element) {
+        /**
+         * Adds element to node subtree.
+         * It is supposed, that there is no equal element
+         */
+        private void add(@NotNull E element) {
             if (compareValues(content, element) > 0) {
                 if (left == null) {
                     left = new Node(element, this);
@@ -49,7 +66,14 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
             }
         }
 
-        private void remove(Object element) {
+
+        /**
+         * Removes element from node subtree.
+         * It is supposed, that there is an equal element in subtree
+         */
+        @SuppressWarnings("ConstantConditions")
+        //and so left and right cannot be null when requested
+        private void remove(@NotNull Object element) {
             if (compareValues(content, element) > 0) {
                 if (left.equals(element)) {
                     left = merge(left.left, left.right);
@@ -73,7 +97,11 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
             return parent != null && parent.right == this;
         }
 
-        private Node next() {
+        /**
+         * Finds Node, containing least element bigger than one in current Node.
+         * Returns null if there is no such
+         */
+        @Nullable private Node next() {
             if (right != null) {
                 Node current = right;
                 while (current.left != null) {
@@ -82,13 +110,17 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
                 return current;
             }
             Node current = this;
-            while (!current.isLeftSon()) {
+            while (current.parent != null && !current.isLeftSon()) {
                 current = current.parent;
             }
             return current.parent;
         }
 
-        private Node previous() {
+        /**
+         * Finds Node, containing greatest element smaller than one in current Node.
+         * Returns null if there is no such
+         */
+        @Nullable private Node previous() {
             if (left != null) {
                 Node current = left;
                 while (current.right != null) {
@@ -97,65 +129,59 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
                 return current;
             }
             Node current = this;
-            while (!current.isRightSon()) {
+            while (current.parent != null && !current.isRightSon()) {
                 current = current.parent;
             }
             return current.parent;
         }
 
-        private Node lowerNode(E element) {
-            Node current = this;
-            while (current != null) {
-                if (compareValues(element, current.content) > 0) {
-                    if (current.right != null) {
-                        current = current.right;
-                    } else {
-                        return current;
-                    }
+        @Nullable private Node lowerNode(@NotNull E element) {
+            if (compareValues(element, content) > 0) {
+                if (right != null) {
+                    return right.lowerNode(element);
                 } else {
-                    if (current.left != null) {
-                        current = current.left;
-                    } else {
-                        while (current.isLeftSon()) {
-                            current = current.parent;
-                        }
-                        return current.parent;
+                    return this;
+                }
+            } else {
+                if (left != null) {
+                    return left.lowerNode(element);
+                } else {
+                    Node current = this;
+                    while (current.parent != null && current.isLeftSon()) {
+                        current = current.parent;
                     }
+                    return current.parent;
                 }
             }
-            return null;
         }
-        private Node upperNode(E element) {
-            Node current = this;
-            while (current != null) {
-                if (compareValues(element, current.content) < 0) {
-                    if (current.left != null) {
-                        current = current.left;
-                    } else {
-                        return current;
-                    }
+        @Nullable private Node upperNode(@NotNull E element) {
+            if (compareValues(element, content) < 0) {
+                if (left != null) {
+                    return left.upperNode(element);
                 } else {
-                    if (current.right != null) {
-                        current = current.right;
-                    } else {
-                        while (current.isRightSon()) {
-                            current = current.parent;
-                        }
-                        return current.parent;
+                    return this;
+                }
+            } else {
+                if (right != null) {
+                    return right.upperNode(element);
+                } else {
+                    Node current = this;
+                    while (current.parent != null && current.isRightSon()) {
+                        current = current.parent;
                     }
+                    return current.parent;
                 }
             }
-            return null;
         }
 
-        private Node first() {
+        @NotNull private Node first() {
             if (left == null) {
                 return this;
             }
             return left.first();
         }
 
-        private Node last() {
+        @NotNull private Node last() {
             if (right == null) {
                 return this;
             }
@@ -168,12 +194,12 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         comparator = null;
     }
 
-    public SimpleMyTreeSet(Comparator<? super E> comparator) {
+    public SimpleMyTreeSet(@NotNull Comparator<? super E> comparator) {
         isReversed = false;
         this.comparator = comparator;
     }
 
-    private SimpleMyTreeSet(Comparator<? super E> comparator, boolean isReversed, int size, int modCount, Node root) {
+    private SimpleMyTreeSet(@Nullable Comparator<? super E> comparator, boolean isReversed, int size, int modCount, @Nullable Node root) {
         this.comparator = comparator;
         this.isReversed = isReversed;
         this.size = size;
@@ -188,11 +214,11 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
 
 
     private class TreeSetIterator implements Iterator<E> {
-        private Node nextElement;
+        @Nullable private Node nextElement;
         private final boolean isReversed;
         private final int expectedModCound;
 
-        private TreeSetIterator(Node nextElement, boolean isReversed) {
+        private TreeSetIterator(@Nullable Node nextElement, boolean isReversed) {
             this.isReversed = isReversed;
             this.nextElement = nextElement;
             expectedModCound = modCount;
@@ -211,7 +237,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         }
 
         @Override
-        public E next() {
+        @NotNull public E next() {
             if (isNotValid()) {
                 throw new ConcurrentModificationException("Tree was modified");
             }
@@ -225,25 +251,31 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     @Override
-    public Iterator<E> iterator() {
-        Node startPoint = isReversed ? root.last() : root.first();
+    @NotNull public Iterator<E> iterator() {
+        Node startPoint = null;
+        if (root != null) {
+            startPoint = isReversed ? root.last() : root.first();
+        }
         return new TreeSetIterator(startPoint, isReversed);
     }
 
 
     @Override
-    public Iterator<E> descendingIterator() {
-        Node startPoint = isReversed ? root.first() : root.last();
+    @NotNull public Iterator<E> descendingIterator() {
+        Node startPoint = null;
+        if (root != null) {
+            startPoint = isReversed ? root.first() : root.last();
+        }
         return new TreeSetIterator(startPoint, !isReversed);
     }
 
     @Override
-    public MyTreeSet<E> descendingSet() {
+    @NotNull public MyTreeSet<E> descendingSet() {
         return new SimpleMyTreeSet<>(comparator, !isReversed, size, modCount + 1, root);
     }
 
     @Override
-    public boolean contains(Object element) {
+    public boolean contains(@NotNull Object element) {
         if (root == null) {
             return false;
         }
@@ -264,7 +296,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     @Override
-    public boolean add(E element) {
+    public boolean add(@NotNull E element) {
         if (contains(element)) {
             return false;
         }
@@ -280,8 +312,10 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return true;
     }
 
+    @SuppressWarnings("ConstantConditions")
+    //if tree contains an element, root cannot be null
     @Override
-    public boolean remove(Object element) {
+    public boolean remove(@NotNull Object element) {
         if (!contains(element)) {
             return false;
         }
@@ -298,7 +332,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     @Override
-    public E first() {
+    @Nullable public E first() {
         if (root == null) {
             return null;
         }
@@ -307,7 +341,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     @Override
-    public E last() {
+    @Nullable public E last() {
         if (root == null) {
             return null;
         }
@@ -316,7 +350,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     @Override
-    public E lower(E element) {
+    @Nullable public E lower(@NotNull E element) {
         if (root == null) {
             return null;
         }
@@ -328,7 +362,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     @Override
-    public E floor(E element) {
+    @Nullable public E floor(@NotNull E element) {
         if (contains(element)) {
             return element;
         }
@@ -336,7 +370,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     @Override
-    public E higher(E element) {
+    @Nullable public E higher(@NotNull E element) {
         if (root == null) {
             return null;
         }
@@ -348,7 +382,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     @Override
-    public E ceiling(E element) {
+    @Nullable public E ceiling(@NotNull E element) {
         if (contains(element)) {
             return element;
         }
@@ -356,7 +390,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     @SuppressWarnings("unchecked")
-    private int compareValues(Object a, Object b) {
+    private int compareValues(@NotNull Object a, @NotNull Object b) {
         if (comparator != null) {
             return comparator.compare((E)a, (E)b);
         }
@@ -364,7 +398,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return ((Comparable<? super E>)a).compareTo((E)b);
     }
 
-    private Node merge(Node a, Node b) {
+    @Nullable private Node merge(@Nullable Node a, @Nullable Node b) {
         if (a == null) {
             return b;
         }
