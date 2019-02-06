@@ -21,7 +21,8 @@ public class SmartList<E> extends AbstractList<E> implements List<E> {
     }
 
     /**
-     * 
+     * Iterator for List.
+     * Removed uses SmartList remove
      */
     private class SmartListIterator implements Iterator<E> {
         private int current;
@@ -76,10 +77,13 @@ public class SmartList<E> extends AbstractList<E> implements List<E> {
         return arrayList.get(index);
     }
 
+    /**
+     * After adding an element changes type of data if needed
+     */
     @SuppressWarnings("unchecked")
     private void grow() {
         if (size - 1 == 1) {
-           var newArray = new Object[5];
+           var newArray = new Object[MAX_LOAD];
            newArray[0] = data;
            data = newArray;
         }
@@ -93,6 +97,9 @@ public class SmartList<E> extends AbstractList<E> implements List<E> {
 
     }
 
+    /**
+     * After removing an element changes type of data if needed
+     */
     private void getSmaller() {
         if (size == 1) {
             @SuppressWarnings("unchecked")
