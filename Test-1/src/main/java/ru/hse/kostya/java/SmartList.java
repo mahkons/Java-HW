@@ -2,8 +2,12 @@ package ru.hse.kostya.java;
 
 import org.jetbrains.annotations.NotNull;
 
+import javax.management.MXBean;
 import java.util.*;
 
+/**
+ * List Implementation that works faster with small Lists.
+ */
 public class SmartList<E> extends AbstractList<E> implements List<E> {
 
     private int size;
@@ -16,6 +20,9 @@ public class SmartList<E> extends AbstractList<E> implements List<E> {
         return size;
     }
 
+    /**
+     * 
+     */
     private class SmartListIterator implements Iterator<E> {
         private int current;
 
@@ -69,6 +76,7 @@ public class SmartList<E> extends AbstractList<E> implements List<E> {
         return arrayList.get(index);
     }
 
+    @SuppressWarnings("unchecked")
     private void grow() {
         if (size - 1 == 1) {
            var newArray = new Object[5];
@@ -76,7 +84,11 @@ public class SmartList<E> extends AbstractList<E> implements List<E> {
            data = newArray;
         }
         if(size - 1 == MAX_LOAD) {
-            data = new ArrayList<E>(this);
+            var oldArray = (E[])data;
+            data = new ArrayList<E>();
+            for (int i = 0; i < size - 1; i++) {
+                ((ArrayList) data).add(oldArray[i]);
+            }
         }
 
     }
@@ -110,7 +122,7 @@ public class SmartList<E> extends AbstractList<E> implements List<E> {
             var arrayList = (ArrayList<E>)data;
             arrayList.add(element);
         }
-        else {
+        if(1 < size && size <= MAX_LOAD) {
             set(size - 1, element);
         }
         return true;
