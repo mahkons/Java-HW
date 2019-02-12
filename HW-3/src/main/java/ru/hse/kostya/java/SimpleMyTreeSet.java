@@ -1,9 +1,6 @@
 package ru.hse.kostya.java;
 
-import java.util.AbstractSet;
-import java.util.Comparator;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
+import java.util.*;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,11 +15,13 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
 
     @Nullable private final Comparator<? super E> comparator;
     private final boolean isReversed;
-    private MutableParams mutableBox = new MutableParams();
+    private Tree tree = new Tree();
 
-     //Saves all mutable parameters.
-     //Needed cause of DescendingSet function. Mutable parameters should be shared
-    private class MutableParams {
+    /**
+     * Saves all mutable parameters.
+     *  Needed cause of DescendingSet function. Mutable parameters should be shared
+     */
+    private class Tree {
         private int size;
         private int modCount;
         @Nullable private Node root;
@@ -54,6 +53,8 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
          * It is supposed, that there is no equal element
          */
         private void add(@NotNull E element) {
+            assert compareValues(element, content) != 0;
+
             if (compareValues(content, element) > 0) {
                 if (left == null) {
                     left = new Node(element, this);
@@ -229,15 +230,15 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     private SimpleMyTreeSet(@Nullable Comparator<? super E> comparator, boolean isReversed,
-                            MutableParams mutableBox) {
+                            Tree tree) {
         this.comparator = comparator;
         this.isReversed = isReversed;
-        this.mutableBox = mutableBox;
+        this.tree = tree;
     }
 
     @Override
     public int size() {
-        return mutableBox.size;
+        return tree.size;
     }
 
 
@@ -254,14 +255,14 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         private TreeSetIterator(@Nullable Node nextElement, boolean isReversed) {
             this.isReversed = isReversed;
             this.nextElement = nextElement;
-            expectedModCount = mutableBox.modCount;
+            expectedModCount = tree.modCount;
         }
 
         /**
          * Checks whether tree was modified since iterator construction.
          */
         private boolean isNotValid() {
-            return expectedModCount != mutableBox.modCount;
+            return expectedModCount != tree.modCount;
         }
 
         @Override
@@ -281,7 +282,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
                 throw new ConcurrentModificationException("Tree was modified");
             }
             if (nextElement == null) {
-                throw new IllegalArgumentException("No next element");
+                throw new NoSuchElementException("No next element");
             }
             final Node savedElement = nextElement;
             nextElement = isReversed ? nextElement.previous() : nextElement.next();
@@ -295,8 +296,8 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     @Override
     @NotNull public Iterator<E> iterator() {
         Node startPoint = null;
-        if (mutableBox.root != null) {
-            startPoint = isReversed ? mutableBox.root.last() : mutableBox.root.first();
+        if (tree.root != null) {
+            startPoint = isReversed ? tree.root.last() : tree.root.first();
         }
         return new TreeSetIterator(startPoint, isReversed);
     }
@@ -309,8 +310,8 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     @Override
     @NotNull public Iterator<E> descendingIterator() {
         Node startPoint = null;
-        if (mutableBox.root != null) {
-            startPoint = isReversed ? mutableBox.root.first() : mutableBox.root.last();
+        if (tree.root != null) {
+            startPoint = isReversed ? tree.root.first() : tree.root.last();
         }
         return new TreeSetIterator(startPoint, !isReversed);
     }
@@ -323,7 +324,7 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
      */
     @Override
     @NotNull public MyTreeSet<E> descendingSet() {
-        return new SimpleMyTreeSet<>(comparator, !isReversed, mutableBox);
+        return new SimpleMyTreeSet<>(comparator, !isReversed, tree);
     }
 
     /**
@@ -332,11 +333,11 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     //faster than contains from AbstractSet
     @Override
     public boolean contains(@NotNull Object element) {
-        if (mutableBox.root == null) {
+        if (tree.root == null) {
             return false;
         }
 
-        Node current = mutableBox.root;
+        Node current = tree.root;
         while (current != null) {
             if (current.content.equals(element)) {
                 return true;
@@ -358,14 +359,14 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         if (contains(element)) {
             return false;
         }
-        mutableBox.modCount++;
-        mutableBox.size++;
+        tree.modCount++;
+        tree.size++;
 
-        if (mutableBox.root == null) {
-            mutableBox.root = new Node(element);
+        if (tree.root == null) {
+            tree.root = new Node(element);
             return true;
         }
-        mutableBox.root.add(element);
+        tree.root.add(element);
 
         return true;
     }
@@ -380,14 +381,14 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
         if (!contains(element)) {
             return false;
         }
-        mutableBox.modCount++;
-        mutableBox.size--;
+        tree.modCount++;
+        tree.size--;
 
-        if (mutableBox.root.content.equals(element)) {
-            mutableBox.root = merge(mutableBox.root.left, mutableBox.root.right);
+        if (tree.root.content.equals(element)) {
+            tree.root = merge(tree.root.left, tree.root.right);
             return true;
         }
-        mutableBox.root.remove(element);
+        tree.root.remove(element);
 
         return true;
     }
@@ -398,11 +399,11 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
      */
     @Override
     @Nullable public E first() {
-        if (mutableBox.root == null) {
+        if (tree.root == null) {
             return null;
         }
 
-        return isReversed ? mutableBox.root.last().content : mutableBox.root.first().content;
+        return isReversed ? tree.root.last().content : tree.root.first().content;
     }
 
     /**
@@ -411,20 +412,20 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
      */
     @Override
     @Nullable public E last() {
-        if (mutableBox.root == null) {
+        if (tree.root == null) {
             return null;
         }
 
-        return isReversed ? mutableBox.root.first().content : mutableBox.root.last().content;
+        return isReversed ? tree.root.first().content : tree.root.last().content;
     }
 
     /** {@link MyTreeSet#lower(E)}  */
     @Override
     @Nullable public E lower(@NotNull E element) {
-        if (mutableBox.root == null) {
+        if (tree.root == null) {
             return null;
         }
-        Node lowerNode = isReversed ? mutableBox.root.upperNode(element) : mutableBox.root.lowerNode(element);
+        Node lowerNode = isReversed ? tree.root.upperNode(element) : tree.root.lowerNode(element);
         if (lowerNode == null) {
            return null;
         }
@@ -443,10 +444,10 @@ public class SimpleMyTreeSet<E> extends AbstractSet<E> implements MyTreeSet<E> {
     /** {@link MyTreeSet#higher(E)}  */
     @Override
     @Nullable public E higher(@NotNull E element) {
-        if (mutableBox.root == null) {
+        if (tree.root == null) {
             return null;
         }
-        Node upperNode = isReversed ? mutableBox.root.lowerNode(element) : mutableBox.root.upperNode(element);
+        Node upperNode = isReversed ? tree.root.lowerNode(element) : tree.root.upperNode(element);
         if (upperNode == null) {
             return null;
         }

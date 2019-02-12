@@ -1,10 +1,12 @@
 package ru.hse.kostya.java;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,32 +28,59 @@ class SimpleMyTreeSetTest {
     }
 
     @Test
-    void size() {
-        assertEquals(0, emptyTreeSet.size());
+    void size_addingElements() {
         assertEquals(3, simpleSetNoComparator.size());
+        simpleSetNoComparator.add("CCC");
+        assertEquals(4, simpleSetNoComparator.size());
+        simpleSetNoComparator.add("CCC");
+        assertEquals(4, simpleSetNoComparator.size());
     }
 
     @Test
-    void iterator() {
-        StringBuilder summary = new StringBuilder();
+    void size_removingElements() {
+        assertEquals(3, simpleSetNoComparator.size());
+        simpleSetNoComparator.remove("aaa");
+        assertEquals(2, simpleSetNoComparator.size());
+        simpleSetNoComparator.remove("aaa");
+        assertEquals(2, simpleSetNoComparator.size());
+    }
+
+    @Test
+    void iterator_GoesThroughWholeSet() {
+        var summary = new StringBuilder();
         for (String elem : simpleSetNoComparator) {
             summary.append(elem);
         }
         assertEquals("AAABBBaaa", summary.toString());
-
-        Iterator<String> setIterator = simpleSetNoComparator.iterator();
-        assertEquals("AAA", setIterator.next());
-
-        assertThrows(ConcurrentModificationException.class, () -> {
-           simpleSetNoComparator.add("ccc");
-           assertTrue(setIterator.hasNext());
-        });
 
         Iterator<String> setIteratorToEnd = simpleSetWithComparator.iterator();
         for (int i = 0; i < simpleSetWithComparator.size(); i++) {
             setIteratorToEnd.next();
         }
         assertFalse(setIteratorToEnd.hasNext());
+    }
+
+    @Test
+    void iterator_ConcurrentModification() {
+        Iterator<String> setIterator = simpleSetNoComparator.iterator();
+        assertEquals("AAA", setIterator.next());
+
+        assertThrows(ConcurrentModificationException.class, () -> {
+            simpleSetNoComparator.add("ccc");
+            assertTrue(setIterator.hasNext());
+        });
+    }
+
+    @Test
+    void iterator_NoNextForLastElement() {
+        Iterator<String> setIterator = simpleSetNoComparator.iterator();
+        for (int j = 0; j < simpleSetNoComparator.size(); j++) {
+            setIterator.next();
+        }
+        assertThrows(NoSuchElementException.class, setIterator::next);
+
+        Iterator<Object> emptySetIterator = emptyTreeSet.iterator();
+        assertThrows(NoSuchElementException.class, emptySetIterator::next);
     }
 
     @Test
@@ -64,10 +93,10 @@ class SimpleMyTreeSetTest {
     }
 
     @Test
-    void descendingSet() {
+    void descendingSet_goingThroughWholeSet() {
         MyTreeSet<String> descendingTreeSet = simpleSetNoComparator.descendingSet();
 
-        StringBuilder summary = new StringBuilder();
+        var summary = new StringBuilder();
         for (String elem : descendingTreeSet) {
             summary.append(elem);
         }
@@ -78,24 +107,55 @@ class SimpleMyTreeSetTest {
     }
 
     @Test
-    void contains() {
+    void descendingSet_sharesTreeWithSetItMadeFrom() {
+        MyTreeSet<String> descendingTreeSet = simpleSetNoComparator.descendingSet();
+        assertFalse(descendingTreeSet.contains("ccc"));
+        simpleSetNoComparator.add("ccc");
+        assertTrue(descendingTreeSet.contains("ccc"));
+        assertEquals(4, descendingTreeSet.size());
+        descendingTreeSet.remove("aaa");
+        assertFalse(simpleSetNoComparator.contains("aaa"));
+
+    }
+
+    @Test
+    void contains_existing() {
+        assertTrue(simpleSetWithComparator.contains("aaa"));
+        assertTrue(simpleSetNoComparator.contains("aaa"));
+    }
+
+    @Test
+    void contains_missing() {
         assertFalse(emptyTreeSet.contains("aaa"));
         assertFalse(simpleSetNoComparator.contains("aaA"));
-        assertTrue(simpleSetNoComparator.contains("AAA"));
     }
 
     @Test
-    void add() {
+    void add_existing() {
+        assertFalse(simpleSetNoComparator.add("aaa"));
+        assertFalse(simpleSetWithComparator.add("aaa"));
+    }
+
+    @Test
+    void add_missing() {
         assertTrue(simpleSetNoComparator.add("bbb"));
         assertEquals("bbb", simpleSetNoComparator.last());
-        assertFalse(simpleSetNoComparator.add("aaa"));
+        assertFalse(simpleSetNoComparator.add("bbb"));
     }
 
     @Test
-    void remove() {
+    void remove_existing() {
         assertTrue(simpleSetNoComparator.remove("aaa"));
+        assertFalse(simpleSetNoComparator.contains("aaa"));
         assertEquals("BBB", simpleSetNoComparator.last());
-        assertFalse(simpleSetNoComparator.remove("bbb"));
+        assertFalse(simpleSetNoComparator.remove("aaa"));
+    }
+
+    @Test
+    void remove_missing() {
+        assertFalse(simpleSetNoComparator.remove("ccc"));
+        assertFalse(simpleSetWithComparator.remove("zzz"));
+        assertEquals(3, simpleSetWithComparator.size());
     }
 
     @Test
