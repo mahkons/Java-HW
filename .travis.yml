@@ -1,10 +1,5 @@
 language: java
-jdk:
-- oraclejdk11
-os:
-- linux
-env:
-- PROJECT_DIR=HW-1
-- PROJECT_DIR=HW-2
-script: cd $PROJECT_DIR && ./gradlew check
+jdk: oraclejdk11
+os: linux
 
+script: for PROJECT_DIR in */; do (cd "$PROJECT_DIR" && ./gradlew check); done
