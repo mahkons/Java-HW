@@ -3,3 +3,6 @@ jdk: oraclejdk11
 os: linux
 
 script: for PROJECT_DIR in */; do (cd "$PROJECT_DIR" && ./gradlew check); done
+
+notifications:
+    email: false
