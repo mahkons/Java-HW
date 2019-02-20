@@ -1,6 +1,8 @@
 package ru.hse.kostya.java;
 
 import com.mongodb.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.morphia.*;
 
 import java.util.List;
@@ -12,13 +14,15 @@ import java.util.List;
  * And morphia library to work with it
  */
 public class PhoneBook {
-    private final Datastore datastore;
+
+    @NotNull private final Datastore datastore;
 
     /**
      * Finds record in database equal(by name and phoneNumber) to given one.
      * @return found record or null if there is no such record in database
      */
-    private Record matchingRecord(Record record){
+    @Nullable
+    private Record matchingRecord(@NotNull Record record){
         return datastore.find(Record.class).field("name").equal(record.getName()).
                 field("phoneNumber").equal(record.getPhoneNumber()).get();
     }
@@ -26,7 +30,7 @@ public class PhoneBook {
     /**
      * Checks whether database contains record equal(by name and phoneNumber) to given.
      */
-    public boolean contains(Record record) {
+    public boolean contains(@NotNull Record record) {
         return matchingRecord(record) != null;
     }
 
@@ -34,7 +38,7 @@ public class PhoneBook {
      * Creates new database with new Morphia object and new Mongo client
      * @param databaseName used as a name for new database
      */
-    public PhoneBook(String databaseName) {
+    public PhoneBook(@NotNull String databaseName) {
         Morphia morphia = new Morphia();
         morphia.mapPackage("ru.hse.kostya.java.Record");
         datastore = morphia.createDatastore(new MongoClient(), databaseName);
@@ -48,7 +52,7 @@ public class PhoneBook {
      * @return {@code true} if element was added
      *     and {@code false} otherwise
      */
-    public boolean add(String name, String phoneNumber) {
+    public boolean add(@NotNull String name, @NotNull String phoneNumber) {
         final var record = new Record(name, phoneNumber);
         if (contains(record)) {
             return false;
@@ -60,14 +64,16 @@ public class PhoneBook {
     /**
      * Returns List of records contained in database with name equal to given.
      */
-    public List<Record> findByName(String name) {
+    @NotNull
+    public List<Record> findByName(@NotNull String name) {
         return datastore.createQuery(Record.class).field("name").equal(name).asList();
     }
 
     /**
      * Returns List of records contained in database with phoneNumber equal to given.
      */
-    public List<Record> findByPhoneNumber(String phoneNumber) {
+    @NotNull
+    public List<Record> findByPhoneNumber(@NotNull String phoneNumber) {
         return datastore.createQuery(Record.class).field("phoneNumber").equal(phoneNumber).asList();
     }
 
@@ -77,7 +83,7 @@ public class PhoneBook {
      * @return {@code true} if element was removed
      *     and {@code false} otherwise
      */
-    public boolean remove(String name, String phoneNumber) {
+    public boolean remove(@NotNull String name, @NotNull String phoneNumber) {
         final var record = new Record(name, phoneNumber);
         if (!contains(record)) {
             return false;
@@ -94,7 +100,7 @@ public class PhoneBook {
      * @return {@code true} if element was updated
      *     and {@code false} otherwise
      */
-    public boolean updateName(String oldName, String phoneNumber, String renewedName) {
+    public boolean updateName(@NotNull String oldName, @NotNull String phoneNumber, @NotNull String renewedName) {
         final var record = new Record(oldName, phoneNumber);
         if (!contains(record)) {
             return false;
@@ -113,7 +119,7 @@ public class PhoneBook {
      * @return {@code true} if element was updated
      *     and {@code false} otherwise
      */
-    public boolean updatePhoneNumber(String name, String oldPhoneNumber, String renewedPhoneNumber) {
+    public boolean updatePhoneNumber(@NotNull String name, @NotNull String oldPhoneNumber, @NotNull String renewedPhoneNumber) {
         final var record = new Record(name, oldPhoneNumber);
         if (!contains(record)) {
             return false;
@@ -127,11 +133,12 @@ public class PhoneBook {
     /**
      * Returns List of all records in database.
      */
+    @NotNull
     public List<Record> allRecords() {
         return datastore.find(Record.class).asList();
     }
 
-    /**
+    /**s
      * Drop database.
      * Note: This will not delete the database, only all of its contents.
      */

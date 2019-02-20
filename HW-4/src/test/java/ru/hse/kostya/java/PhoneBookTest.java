@@ -1,5 +1,6 @@
 package ru.hse.kostya.java;
 
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,13 @@ class PhoneBookTest {
     }
 
     @Test
+    void contains_null(){
+        assertThrows(IllegalArgumentException.class, () -> {
+            phoneBook.contains(null);
+        });
+    }
+
+    @Test
     void add_notExisting() {
         assertTrue(phoneBook.add("Kostya", "hidden"));
         assertEquals(List.of(new Record("Kostya", "hidden")), phoneBook.findByName("Kostya"));
@@ -43,18 +51,33 @@ class PhoneBookTest {
     }
 
     @Test
+    void add_null(){
+        assertThrows(IllegalArgumentException.class, () -> {
+            phoneBook.add(null, "HA!");
+        });
+    }
+
+    @Test
     void findByName_existing() {
         phoneBook.add("Masha", "charming");
         assertEquals(List.of(new Record("Masha", "sublime"),
                 new Record("Masha", "charming")), phoneBook.findByName("Masha"));
     }
 
+    @Test
     void findByName_notExisting() {
         assertTrue(phoneBook.findByName("Tosha").isEmpty());
         phoneBook.remove("Senya", "890");
         assertTrue(phoneBook.findByName("Senya").isEmpty());
 
         assertTrue(emptyPhoneBook.findByName("some").isEmpty());
+    }
+
+    @Test
+    void findByName_null(){
+        assertThrows(IllegalArgumentException.class, () -> {
+            phoneBook.findByName(null);
+        });
     }
 
     @Test
@@ -74,6 +97,13 @@ class PhoneBookTest {
     }
 
     @Test
+    void findByPhoneNumber_null(){
+        assertThrows(IllegalArgumentException.class, () -> {
+            phoneBook.findByPhoneNumber(null);
+        });
+    }
+
+    @Test
     void remove() {
         assertTrue(phoneBook.remove("Senya", "890"));
         assertTrue(phoneBook.findByName("Senya").isEmpty());
@@ -81,6 +111,13 @@ class PhoneBookTest {
 
         assertFalse(phoneBook.remove("Tosha", "bald"));
         assertFalse(emptyPhoneBook.remove("Tosha", "bald"));
+    }
+
+    @Test
+    void remove_null(){
+        assertThrows(IllegalArgumentException.class, () -> {
+            phoneBook.remove(null, "Hacker");
+        });
     }
 
     @Test
@@ -93,12 +130,26 @@ class PhoneBookTest {
     }
 
     @Test
+    void updateName_null(){
+        assertThrows(IllegalArgumentException.class, () -> {
+            phoneBook.updateName("super", "Hacker", null);
+        });
+    }
+
+    @Test
     void updatePhoneNumber() {
         assertTrue(phoneBook.updatePhoneNumber("Senya", "890", "+790"));
         assertEquals(List.of(new Record("Senya", "+790")), phoneBook.findByPhoneNumber("+790"));
         assertFalse(phoneBook.updatePhoneNumber("Senya", "890", "+790"));
 
         assertFalse(emptyPhoneBook.updateName("some", "better", "some"));
+    }
+
+    @Test
+    void updatePhoneNumber_null(){
+        assertThrows(IllegalArgumentException.class, () -> {
+            phoneBook.updatePhoneNumber("super", "Hacker", null);
+        });
     }
 
     @Test
