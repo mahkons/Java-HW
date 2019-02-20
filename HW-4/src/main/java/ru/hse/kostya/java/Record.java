@@ -7,6 +7,10 @@ import xyz.morphia.annotations.Id;
 
 import java.util.Objects;
 
+/**
+ * Value class with name and phoneNumber fields
+ *      prepared to be used in mongo database.
+ */
 @Entity
 public class Record {
     @Id private ObjectId id;
@@ -55,9 +59,6 @@ public class Record {
 
     @Override
     public String toString() {
-        return "Record{" +
-                ", name='" + name + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                '}';
+        return "Record{ name='" + name + '\'' + ", phoneNumber='" + phoneNumber + '\'' + '}';
     }
 }
