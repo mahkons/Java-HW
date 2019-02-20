@@ -11,6 +11,9 @@ public class Main {
 
     private static PhoneBook phoneBook = new PhoneBook("GreatPhoneBook");
     private static Scanner inputScanner = new Scanner(System.in);
+    static {
+        inputScanner.useDelimiter(System.getProperty("line.separator"));
+    }
 
     /**
      * All available commands.
@@ -31,7 +34,7 @@ public class Main {
      */
     private static String readName() {
         System.out.print("Write name: ");
-        String name = inputScanner.nextLine();
+        String name = inputScanner.next();
         System.out.println("Name accepted");
         return name;
     }
@@ -42,7 +45,7 @@ public class Main {
      */
     private static String readPhoneNumber() {
         System.out.print("Write phone number: ");
-        String phoneNumber = inputScanner.nextLine();
+        String phoneNumber = inputScanner.next();
         System.out.println("Phone number accepted");
         return phoneNumber;
     }
@@ -55,9 +58,11 @@ public class Main {
 
         while (isInteracting) {
             int query = 0;
+            System.out.print("Your query: ");
             try {
                 query = inputScanner.nextInt();
             } catch (InputMismatchException e) {
+                inputScanner.next();
                 System.out.println("Token does not match " +
                         "the Integer regular expression, or is out of range");
                 continue;
@@ -133,7 +138,7 @@ public class Main {
         for (Record record : phoneBook.findByName(name)) {
             System.out.println(record.getPhoneNumber());
         }
-        System.out.println("All phone numbers for given name added");
+        System.out.println("All phone numbers for given name printed");
     }
 
     /**
@@ -144,10 +149,10 @@ public class Main {
     private static void getNamesByPhone() {
         System.out.println("Get names by phone:");
         String phoneNumber = readPhoneNumber();
-        for (Record record : phoneBook.findByName(phoneNumber)) {
+        for (Record record : phoneBook.findByPhoneNumber(phoneNumber)) {
             System.out.println(record.getName());
         }
-        System.out.println("All names for given phone number added");
+        System.out.println("All names for given phone number printed");
     }
 
     /**
