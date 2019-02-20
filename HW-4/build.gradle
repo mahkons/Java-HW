@@ -16,12 +16,14 @@ buildscript {
 
 plugins {
     id 'java'
+    id 'application'
     id "org.jetbrains.intellij" version "0.4.2"
 }
 
+apply plugin:'application'
+mainClassName = "ru.hse.kostya.java.Main"
 
 apply plugin: 'org.jetbrains.intellij'
-
 apply plugin: 'java'
 
 group 'ru.hse.kostya'
@@ -46,4 +48,8 @@ test {
     testLogging {
         events 'PASSED', 'FAILED', 'SKIPPED'
     }
+}
+
+run{
+    standardInput = System.in
 }
