@@ -3,8 +3,18 @@ package ru.hse.kostya.java;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+/**
+ * Method that interacts with user by treating query to database.
+ * Uses System.in System.out for interaction
+ */
 public class Main {
 
+    private static PhoneBook phoneBook = new PhoneBook("GreatPhoneBook");
+    private static Scanner inputScanner = new Scanner(System.in);
+
+    /**
+     * All available commands.
+     */
     private static final String COMMANDS = "0 - exit\n" +
             "1 - add record(name and phone number)\n" +
             "2 - find phoneNumbers by name\n" +
@@ -14,14 +24,23 @@ public class Main {
             "6 - update phoneNumber for record\n" +
             "7 - print all records\n";
 
-    private static String readName(Scanner inputScanner) {
+
+    /**
+     * Using System.out asks user to write a name and
+     *      get it from System.in with scanner.
+     */
+    private static String readName() {
         System.out.print("Write name: ");
         String name = inputScanner.nextLine();
         System.out.println("Name accepted");
         return name;
     }
 
-    private static String readPhoneNumber(Scanner inputScanner) {
+    /**
+     * Using System.out asks user to write a phoneNumber and
+     *      get it from System.in with scanner.
+     */
+    private static String readPhoneNumber() {
         System.out.print("Write phone number: ");
         String phoneNumber = inputScanner.nextLine();
         System.out.println("Phone number accepted");
@@ -30,8 +49,6 @@ public class Main {
 
     public static void main(String[] args) {
 
-        var phoneBook = new PhoneBook("GreatPhoneBook");
-        var inputScanner = new Scanner(System.in);
         boolean isInteracting = true;
 
         System.out.println(COMMANDS);
@@ -41,7 +58,8 @@ public class Main {
             try {
                 query = inputScanner.nextInt();
             } catch (InputMismatchException e) {
-                System.out.println("Token does not match the Integer regular expression, or is out of range");
+                System.out.println("Token does not match " +
+                        "the Integer regular expression, or is out of range");
                 continue;
             }
 
@@ -51,31 +69,31 @@ public class Main {
                     break;
                 }
                 case 1: {
-                    add(inputScanner, phoneBook);
+                    add();
                     break;
                 }
                 case 2: {
-                    getPhonesByName(inputScanner, phoneBook);
+                    getPhonesByName();
                     break;
                 }
                 case 3: {
-                    getNamesByPhone(inputScanner, phoneBook);
+                    getNamesByPhone();
                     break;
                 }
                 case 4: {
-                    remove(inputScanner, phoneBook);
+                    remove();
                     break;
                 }
-                case 5:{
-
+                case 5: {
+                    updatingRecordName();
                     break;
                 }
                 case 6: {
-                    updatingRecordName(inputScanner, phoneBook);
+                    updatingRecordPhoneNumber();
                     break;
                 }
                 case 7: {
-                    printAllRecords(inputScanner, phoneBook);
+                    printAllRecords();
                     break;
                 }
                 default: {
@@ -87,10 +105,15 @@ public class Main {
         }
     }
 
-    private static void add(Scanner inputScanner, PhoneBook phoneBook) {
+    /**
+     * Asks user to write a name and phoneNumber and adds
+     *  that record to database.
+     * Uses System.in System.out for interaction
+     */
+    private static void add() {
         System.out.println("Adding new record");
-        String name = readName(inputScanner);
-        String phoneNumber = readPhoneNumber(inputScanner);
+        String name = readName();
+        String phoneNumber = readPhoneNumber();
         boolean wasAdded = phoneBook.add(name, phoneNumber);
         if (wasAdded) {
             System.out.println("Record added successfully");
@@ -98,26 +121,44 @@ public class Main {
             System.out.println("Record already in phonebook");
         }
     }
-    private static void getPhonesByName(Scanner inputScanner, PhoneBook phoneBook) {
+
+    /**
+     * Asks user to write a name and prints
+     *  all phones with equal name from database.
+     * Uses System.in System.out for interaction
+     */
+    private static void getPhonesByName() {
         System.out.println("Get phones by name:");
-        String name = readName(inputScanner);
+        String name = readName();
         for (Record record : phoneBook.findByName(name)) {
             System.out.println(record.getPhoneNumber());
         }
         System.out.println("All phone numbers for given name added");
     }
-    private static void getNamesByPhone(Scanner inputScanner, PhoneBook phoneBook) {
+
+    /**
+     * Asks user to write a phone number and prints
+     *  all names with equal phone from database.
+     * Uses System.in System.out for interaction
+     */
+    private static void getNamesByPhone() {
         System.out.println("Get names by phone:");
-        String phoneNumber = readPhoneNumber(inputScanner);
+        String phoneNumber = readPhoneNumber();
         for (Record record : phoneBook.findByName(phoneNumber)) {
             System.out.println(record.getName());
         }
         System.out.println("All names for given phone number added");
     }
-    private static void remove(Scanner inputScanner, PhoneBook phoneBook) {
+
+    /**
+     * Asks user to write a name and phoneNumber and removes
+     *  that record to database.
+     * Uses System.in System.out for interaction
+     */
+    private static void remove() {
         System.out.println("Removing record");
-        String name = readName(inputScanner);
-        String phoneNumber = readPhoneNumber(inputScanner);
+        String name = readName();
+        String phoneNumber = readPhoneNumber();
         boolean wasRemoved = phoneBook.remove(name, phoneNumber);
         if (wasRemoved) {
             System.out.println("Record removed successfully");
@@ -125,13 +166,19 @@ public class Main {
             System.out.println("No such record in database");
         }
     }
-    private static void updatingRecordName(Scanner inputScanner, PhoneBook phoneBook) {
+
+    /**
+     * Asks user to write a name and phoneNumber and updates
+     *  that record to database with one more name asked from user.
+     * Uses System.in System.out for interaction
+     */
+    private static void updatingRecordName() {
         System.out.println("Updating records name");
         System.out.println("Record you like to update:");
-        String oldName = readName(inputScanner);
-        String phoneNumber = readPhoneNumber(inputScanner);
+        String oldName = readName();
+        String phoneNumber = readPhoneNumber();
         System.out.println("New name for record");
-        String name = readName(inputScanner);
+        String name = readName();
         boolean wasUpdated = phoneBook.updateName(oldName, phoneNumber, name);
         if (wasUpdated) {
             System.out.println("Record updated successfully");
@@ -139,13 +186,19 @@ public class Main {
             System.out.println("No such record in database");
         }
     }
-    private static void updatingRecordPhoneNumber(Scanner inputScanner, PhoneBook phoneBook) {
+
+    /**
+     * Asks user to write a name and phoneNumber and updates
+     *  that record to database with one more phone number asked from user.
+     * Uses System.in System.out for interaction
+     */
+    private static void updatingRecordPhoneNumber() {
         System.out.println("Updating records phone number");
         System.out.println("Record you like to update:");
-        String name = readName(inputScanner);
-        String oldPhoneNumber = readPhoneNumber(inputScanner);
+        String name = readName();
+        String oldPhoneNumber = readPhoneNumber();
         System.out.println("New phone number for record");
-        String phoneNumber = readName(inputScanner);
+        String phoneNumber = readName();
         boolean wasUpdated = phoneBook.updatePhoneNumber(name, oldPhoneNumber, phoneNumber);
         if (wasUpdated) {
             System.out.println("Record updated successfully");
@@ -153,7 +206,11 @@ public class Main {
             System.out.println("No such record in database");
         }
     }
-    private static void printAllRecords(Scanner inputScanner, PhoneBook phoneBook) {
+
+    /**
+     * Prints all records from database.
+     */
+    private static void printAllRecords() {
         System.out.println("Printing all records in database");
         for (Record record : phoneBook.allRecords()) {
             System.out.println(record);

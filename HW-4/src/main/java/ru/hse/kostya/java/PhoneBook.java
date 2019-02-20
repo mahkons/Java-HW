@@ -1,14 +1,13 @@
 package ru.hse.kostya.java;
 
-import com.mongodb.*;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import com.mongodb.*;
 import xyz.morphia.*;
 
-import java.util.List;
 
 /**
- *
  * Database for storing {@link Record} instances.
  * Uses mongo service as database
  * And morphia library to work with it
@@ -22,9 +21,9 @@ public class PhoneBook {
      * @return found record or null if there is no such record in database
      */
     @Nullable
-    private Record matchingRecord(@NotNull Record record){
-        return datastore.find(Record.class).field("name").equal(record.getName()).
-                field("phoneNumber").equal(record.getPhoneNumber()).get();
+    private Record matchingRecord(@NotNull Record record) {
+        return datastore.find(Record.class).field("name").equal(record.getName())
+                .field("phoneNumber").equal(record.getPhoneNumber()).get();
     }
 
     /**
@@ -35,7 +34,7 @@ public class PhoneBook {
     }
 
     /**
-     * Creates new database with new Morphia object and new Mongo client
+     * Creates new database with new Morphia object and new Mongo client.
      * @param databaseName used as a name for new database
      */
     public PhoneBook(@NotNull String databaseName) {
@@ -100,12 +99,14 @@ public class PhoneBook {
      * @return {@code true} if element was updated
      *     and {@code false} otherwise
      */
-    public boolean updateName(@NotNull String oldName, @NotNull String phoneNumber, @NotNull String renewedName) {
+    public boolean updateName(@NotNull String oldName, @NotNull String phoneNumber,
+                              @NotNull String renewedName) {
         final var record = new Record(oldName, phoneNumber);
         if (!contains(record)) {
             return false;
         }
-        var updateOperations = datastore.createUpdateOperations(Record.class).set("name", renewedName);
+        var updateOperations = datastore
+                .createUpdateOperations(Record.class).set("name", renewedName);
         datastore.update(matchingRecord(record), updateOperations);
 
         return true;
@@ -119,12 +120,14 @@ public class PhoneBook {
      * @return {@code true} if element was updated
      *     and {@code false} otherwise
      */
-    public boolean updatePhoneNumber(@NotNull String name, @NotNull String oldPhoneNumber, @NotNull String renewedPhoneNumber) {
+    public boolean updatePhoneNumber(@NotNull String name, @NotNull String oldPhoneNumber,
+                                     @NotNull String renewedPhoneNumber) {
         final var record = new Record(name, oldPhoneNumber);
         if (!contains(record)) {
             return false;
         }
-        var updateOperations = datastore.createUpdateOperations(Record.class).set("phoneNumber", renewedPhoneNumber);
+        var updateOperations = datastore
+                .createUpdateOperations(Record.class).set("phoneNumber", renewedPhoneNumber);
         datastore.update(matchingRecord(record), updateOperations);
 
         return true;
