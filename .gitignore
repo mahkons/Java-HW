@@ -1,0 +1,22 @@
+#Gitignore itself
+# .gitignore
+
+#vim temporary files
+*.swp
+*.swo
+*.swn
+
+#tex build
+*.aux
+*.log
+*.synctex.gz
+*.out
+*.toc
+
+#cpp output
+*.out
+
+#.idea files
+workspace.xml
+usage.statistics.xml
+tasks.xml
