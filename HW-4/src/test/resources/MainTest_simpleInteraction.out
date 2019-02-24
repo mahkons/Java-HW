@@ -1,0 +1,67 @@
+0 - exit
+1 - add record(name and phone number)
+2 - find phoneNumbers by name
+3 - find names by phoneNumber
+4 - delete record
+5 - update name for record
+6 - update phoneNumber for record
+7 - print all records
+
+Your query: Adding new record
+Write name: Name accepted
+Write phone number: Phone number accepted
+Record added successfully
+Your query: Adding new record
+Write name: Name accepted
+Write phone number: Phone number accepted
+Record added successfully
+Your query: Adding new record
+Write name: Name accepted
+Write phone number: Phone number accepted
+Record added successfully
+Your query: Adding new record
+Write name: Name accepted
+Write phone number: Phone number accepted
+Record added successfully
+Your query: Get phones by name:
+Write name: Name accepted
+Charming
+Captivating
+All phone numbers for given name printed
+Your query: Get phones by name:
+Write name: Name accepted
+All phone numbers for given name printed
+Your query: Get names by phone:
+Write phone number: Phone number accepted
+Tosha
+All names for given phone number printed
+Your query: Get names by phone:
+Write phone number: Phone number accepted
+All names for given phone number printed
+Your query: Removing record
+Write name: Name accepted
+Write phone number: Phone number accepted
+Record removed successfully
+Your query: Updating records name
+Record you like to update:
+Write name: Name accepted
+Write phone number: Phone number accepted
+New name for record
+Write name: Name accepted
+Record updated successfully
+Your query: Updating records phone number
+Record you like to update:
+Write name: Name accepted
+Write phone number: Phone number accepted
+New phone number for record
+Write name: Name accepted
+Record updated successfully
+Your query: Printing all records in database
+Record{ name='Masha', phoneNumber='Charming'}
+Record{ name='Tosha', phoneNumber='NotBold'}
+Record{ name='St.Petersburg', phoneNumber='NiceBigVillage'}
+All records printed
+Your query: Token does not match the Integer regular expression, or is out of range
+Your query: Token does not match the Integer regular expression, or is out of range
+Your query: Token does not match the Integer regular expression, or is out of range
+Your query: 

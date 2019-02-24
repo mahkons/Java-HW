@@ -141,8 +141,8 @@ public class PhoneBook {
         return datastore.find(Record.class).asList();
     }
 
-    /**s
-     * Drop database.
+    /**
+     * Drops database.
      * Note: This will not delete the database, only all of its contents.
      */
     public void clear() {
