@@ -1,8 +1,8 @@
 Writing methods and fields different in ClassForDifference and ClassForDifferenceAnotherOne
 Methods of ClassForDifference only:
-    private void methodWithOtherModifiers()
     private static void MethodWithArgsDifferent(List<? super Collection<?> > arg0)
     private int methodWithReturnValue()
+    private void methodWithOtherModifiers()
 
 Methods of ClassForDifferenceAnotherOne only:
     private static void MethodWithArgsDifferent(List<? super Collection<? extends List> > arg0)
