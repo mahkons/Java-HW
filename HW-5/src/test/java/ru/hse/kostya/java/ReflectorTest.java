@@ -81,7 +81,7 @@ class ReflectorTest {
         <E, K> S withComplexArg(List<S> l) { return null; }
     }
 
-    private static class WildCardTypes<T, S> {
+    private static class WildcardTypes<T, S> {
         void simple(List<? super T> l) {}
         Collection<? extends T> withReturnValue(){ return null; }
         <E extends List<? super T>> T complexOne(Collection<? super Collection<? extends E>> l) { return null; }
@@ -162,7 +162,7 @@ class ReflectorTest {
 
     @Test
     void wildcardType() throws IOException {
-        assertTrue(writeToFileAndCheckForEquality(WildcardType.class));
+        assertTrue(writeToFileAndCheckForEquality(WildcardTypes.class));
     }
 
     @Test
@@ -173,9 +173,10 @@ class ReflectorTest {
     private boolean writeToFileAndCheckForEquality(Class<?> clazz) throws IOException {
         Reflector.printStructure(clazz);
         var outputFile = new File(clazz.getSimpleName() + ".java");
-        var expectedFile = new File("src/test/resources/" + clazz.getSimpleName() + ".java");
+        var expectedFile = new File("src/test/resources/" + clazz.getSimpleName() + ".ans");
         return FileUtils.contentEquals(expectedFile, outputFile);
     }
 
-}
 
+
+}

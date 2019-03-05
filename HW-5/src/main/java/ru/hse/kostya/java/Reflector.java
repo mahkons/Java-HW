@@ -8,8 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.*;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -64,7 +63,7 @@ public class Reflector {
      */
     private static void writeClassDeclaration(Writer writer, Class<?> someClass, boolean isOuter) throws IOException {
         if (isOuter) {
-            writer.write(Modifier.PUBLIC);
+            writer.write(Modifier.toString(Modifier.PUBLIC));
         } else {
             writer.write(Modifier.toString(someClass.getModifiers()));
         }
@@ -80,40 +79,46 @@ public class Reflector {
      * Writes all fields, methods, constructors, inner and nested classes.
      * Methods and constructors bodies are just {@code throw new UnsupportedOperationException statement}
      * Fields initialized to there default value
+     *
+     * All result Stings sorted in natural order for some certainty
      */
     private static void writeClassContent(Writer writer, Class<?> someClass) throws IOException {
 
+        List<String> allClassContent = new ArrayList<>();
         for (Class<?> clazz : someClass.getDeclaredClasses()) {
-            printClass(writer, clazz, false);
-            writer.write("" + linebreak);
+            var stringWriter = new StringBuilderWriter();
+            printClass(stringWriter, clazz, false);
+            allClassContent.add(stringWriter.toString());
         }
         for (Constructor<?> constructor : someClass.getDeclaredConstructors()) {
             if (constructor.isSynthetic()) {
                 continue;
             }
-            writer.write(indent);
-            writeConstructor(writer, constructor);
-            writer.write(unsupportedOperation);
-            writer.write("" + linebreak);
+            var stringWriter = new StringBuilderWriter();
+            writeConstructor(stringWriter, constructor);
+            stringWriter.write(unsupportedOperation);
+            allClassContent.add(stringWriter.toString());
         }
         for (Method method : someClass.getDeclaredMethods()) {
             if (method.isSynthetic()) {
                 continue;
             }
-            writer.write(indent);
-            writeMethod(writer, method);
-            writer.write(unsupportedOperation);
-            writer.write("" + linebreak);
+            var stringWriter = new StringBuilderWriter();
+            writeMethod(stringWriter, method);
+            stringWriter.write(unsupportedOperation);
+            allClassContent.add(stringWriter.toString());
         }
         for (Field field : someClass.getDeclaredFields()) {
             if (field.isSynthetic()) {
                 continue;
             }
-            writer.write(indent);
-            writeField(writer, field);
-            writer.write("" + linebreak);
+            var stringWriter = new StringBuilderWriter();
+            writeField(stringWriter, field);
+            allClassContent.add(stringWriter.toString());
         }
 
+        allClassContent.sort(Comparator.naturalOrder());
+        writeListOfString(writer, allClassContent);
     }
 
     /**
@@ -131,7 +136,7 @@ public class Reflector {
 
         if (type instanceof Class<?>) {
             var clazz = (Class<?>)type;
-            writeClassNameWithType(writer, clazz);
+            writer.write(clazz.getSimpleName());
         } else if (type instanceof TypeVariable) {
             var typeVariable = (TypeVariable<?>)type;
             writer.write(typeVariable.getName());
@@ -148,7 +153,7 @@ public class Reflector {
                     " super ", " & ", " ", false);
         } else if (type instanceof ParameterizedType) {
             var parametrisedType = (ParameterizedType)type;
-            writer.write(parametrisedType.getRawType().toString());
+            writeType(writer, parametrisedType.getRawType(), false);
             writeTypesArray(writer, parametrisedType.getActualTypeArguments(),
                     "<", ", ", ">", false);
         } else if (type instanceof GenericArrayType) {
@@ -183,6 +188,7 @@ public class Reflector {
      * Writes constructor with modifiers, typeParameters and parameters.
      */
     private static void writeConstructor(Writer writer, Constructor<?> constructor) throws IOException {
+        writer.write(indent);
         writer.write(Modifier.toString(constructor.getModifiers()) + " ");
         writeTypesArray(writer, constructor.getTypeParameters(), "<", ", ", "> ", true);
         writer.write(constructor.getDeclaringClass().getSimpleName());
@@ -193,6 +199,7 @@ public class Reflector {
      * Writes constructor with modifiers, typeParameters, generic return type, name and parameters.
      */
     private static void writeMethod(Writer writer, Method method) throws IOException {
+        writer.write(indent);
         writer.write(Modifier.toString(method.getModifiers()) + " ");
         writeTypesArray(writer, method.getTypeParameters(), "<", ", ", "> ", true);
         writeType(writer, method.getGenericReturnType(), false);
@@ -223,10 +230,11 @@ public class Reflector {
      * Initializes it to default value
      */
     private static void writeField(Writer writer, Field field) throws IOException {
+        writer.write(indent);
         writer.write(Modifier.toString(field.getModifiers()) + " ");
         writeType(writer, field.getGenericType(), false);
         writer.write(" " + field.getName());
-        writer.write(" = " + getDefaultValue(field.getGenericType()) + ";" + linebreak);
+        writer.write(" = " + getDefaultValue(field.getGenericType()) + ";");
     }
 
     /**
@@ -352,3 +360,4 @@ public class Reflector {
     }
 
 }
+
