@@ -6,6 +6,7 @@ import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+import java.lang.reflect.WildcardType;
 import java.util.AbstractList;
 import java.util.Collection;
 import java.util.List;
@@ -22,7 +23,7 @@ class ReflectorTest {
         boolean e;
         short f;
         double g;
-        long h;
+        float h;
     }
 
     private static class FieldsModifiers {
@@ -30,7 +31,7 @@ class ReflectorTest {
         protected static final long b = 0;
     }
 
-    private static class methodModifiers {
+    private static class MethodModifiers {
         private static int a() { return 0;}
         final int result() { return 0; }
     }
@@ -109,15 +110,72 @@ class ReflectorTest {
 
     //private static class BigAndComplexClass
     //testing difference between classes
-    //tests themselves
+    @Test
+    void simplePrimitives() throws IOException {
+        assertTrue(writeToFileAndCheckForEquality(SimplePrimitives.class));
+    }
 
-    private boolean writeToFileAndCompare(Class<?> clazz) throws IOException {
+    @Test
+    void fieldsModifiers() throws IOException {
+        assertTrue(writeToFileAndCheckForEquality(FieldsModifiers.class));
+    }
+
+    @Test
+    void methodModifiers() throws IOException {
+        assertTrue(writeToFileAndCheckForEquality(MethodModifiers.class));
+    }
+
+    @Test
+    void defaultInitialising() throws IOException {
+        assertTrue(writeToFileAndCheckForEquality(DefaultInitializingOfFinalFields.class));
+    }
+
+    @Test
+    void withSuperClass() throws IOException {
+        assertTrue(writeToFileAndCheckForEquality(WithSuperClass.class));
+    }
+
+    @Test
+    void withInterfaces() throws IOException {
+        assertTrue(writeToFileAndCheckForEquality(WithInterfaces.class));
+    }
+
+    @Test
+    void constructors() throws IOException {
+        assertTrue(writeToFileAndCheckForEquality(TestConstructors.class));
+    }
+
+    @Test
+    void methods() throws IOException {
+        assertTrue(writeToFileAndCheckForEquality(TestMethods.class));
+    }
+
+    @Test
+    void genericFields() throws IOException {
+        assertTrue(writeToFileAndCheckForEquality(GenericFields.class));
+    }
+
+    @Test
+    void genericMethods() throws IOException {
+        assertTrue(writeToFileAndCheckForEquality(GenericMethods.class));
+    }
+
+    @Test
+    void wildcardType() throws IOException {
+        assertTrue(writeToFileAndCheckForEquality(WildcardType.class));
+    }
+
+    @Test
+    void nestedAndInnerClasses() throws IOException {
+        assertTrue(writeToFileAndCheckForEquality(NestedAndInnerClasses.class));
+    }
+
+    private boolean writeToFileAndCheckForEquality(Class<?> clazz) throws IOException {
         Reflector.printStructure(clazz);
         var outputFile = new File(clazz.getSimpleName() + ".java");
         var expectedFile = new File("src/test/resources/" + clazz.getSimpleName() + ".java");
         return FileUtils.contentEquals(expectedFile, outputFile);
     }
 
-
-
 }
+

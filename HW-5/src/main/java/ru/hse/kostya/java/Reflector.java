@@ -1,5 +1,7 @@
 package ru.hse.kostya.java;
 
+import org.apache.groovy.io.StringBuilderWriter;
+import org.bouncycastle.math.raw.Mod;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FileWriter;
@@ -33,15 +35,16 @@ public class Reflector {
      */
     public static void printStructure(@NotNull Class<?> someClass) throws IOException {
         try (var writer = new FileWriter(someClass.getSimpleName() + ".java")) {
-            printClass(writer, someClass);
+            printClass(writer, someClass, true);
         }
     }
 
     /**
      * Writes class with declaration and full content.
+     * @param isOuter outermost class modifier should be printed public only, no matter what they were
      */
-    private static void printClass(Writer writer, Class<?> someClass) throws IOException {
-        writeClassDeclaration(writer, someClass);
+    private static void printClass(Writer writer, Class<?> someClass, boolean isOuter) throws IOException {
+        writeClassDeclaration(writer, someClass, isOuter);
         writer.write(" {" + linebreak + linebreak);
         writeClassContent(writer, someClass);
         writer.write("}" + linebreak);
@@ -57,9 +60,14 @@ public class Reflector {
 
     /**
      * Writes class with modifiers, class keyWord, full name with parameters, superclass and implemented interfaces.
+     * @param isOuter outermost class modifier should be printed public only, no matter what they were
      */
-    private static void writeClassDeclaration(Writer writer, Class<?> someClass) throws IOException {
-        writer.write(Modifier.toString(someClass.getModifiers()));
+    private static void writeClassDeclaration(Writer writer, Class<?> someClass, boolean isOuter) throws IOException {
+        if (isOuter) {
+            writer.write(Modifier.PUBLIC);
+        } else {
+            writer.write(Modifier.toString(someClass.getModifiers()));
+        }
         writer.write(" class ");
         writeClassNameWithType(writer, someClass);
 
@@ -76,7 +84,7 @@ public class Reflector {
     private static void writeClassContent(Writer writer, Class<?> someClass) throws IOException {
 
         for (Class<?> clazz : someClass.getDeclaredClasses()) {
-            printClass(writer, clazz);
+            printClass(writer, clazz, false);
             writer.write("" + linebreak);
         }
         for (Constructor<?> constructor : someClass.getDeclaredConstructors()) {
@@ -229,6 +237,14 @@ public class Reflector {
         if (type instanceof Class) {
             var clazz = (Class<?>)type;
             if (clazz.isPrimitive()) {
+                if (clazz.equals(char.class)) {
+                    //common way prints some unreadable character
+                    return "'\\0'";
+                }
+                if (clazz.equals(float.class)) {
+                    //common way prints 0.0 which is taken for double
+                    return "0";
+                }
                 return Array.get(Array.newInstance(clazz, 1), 0).toString();
             } else {
                 return "null";
@@ -245,81 +261,68 @@ public class Reflector {
         try(Writer writer = new FileWriter("DiffOutput.java")) {
             writer.write("Writing methods and fields different in " + first.getSimpleName() + " and " + second.getSimpleName() + "" + linebreak);
 
-            List<Method> methodsOfFirstClassOnly = getDifferentMethods(first, second);
-            List<Method> methodsOfSecondClassOnly = getDifferentMethods(second, first);
+            List<String> methodsOfFirstClassOnly = getDifferentMethods(first, second);
+            List<String> methodsOfSecondClassOnly = getDifferentMethods(second, first);
             if (methodsOfFirstClassOnly.isEmpty() && methodsOfSecondClassOnly.isEmpty()) {
                 writer.write("All methods are the same" + linebreak);
             } else {
                 writer.write("Methods of " + first.getSimpleName() + " only:" + linebreak);
-                writeListOfMethods(first, writer, methodsOfFirstClassOnly);
+                writeListOfString(writer, methodsOfFirstClassOnly);
                 writer.write("Methods of " + second.getSimpleName() + " only:" + linebreak);
-                writeListOfMethods(second, writer, methodsOfSecondClassOnly);
+                writeListOfString(writer, methodsOfSecondClassOnly);
             }
 
-            List<Field> fieldsOfFirstClassOnly = getDifferentFields(first, second);
-            List<Field> fieldsOfSecondClassOnly = getDifferentFields(second, first);
+            List<String> fieldsOfFirstClassOnly = getDifferentFields(first, second);
+            List<String> fieldsOfSecondClassOnly = getDifferentFields(second, first);
             if (fieldsOfFirstClassOnly.isEmpty() && fieldsOfSecondClassOnly.isEmpty()) {
                 writer.write("All fields are the same" + linebreak);
             } else {
                 writer.write("Fields of " + first.getSimpleName() + " only:" + linebreak);
-                WriteListOfFields(writer, first, fieldsOfFirstClassOnly);
+                writeListOfString(writer, fieldsOfFirstClassOnly);
                 writer.write("Fields of " + second.getSimpleName() + " only:" + linebreak);
-                WriteListOfFields(writer, second, fieldsOfSecondClassOnly);
+                writeListOfString(writer, fieldsOfSecondClassOnly);
             }
         }
     }
 
-    private static void writeListOfMethods(Class<?> clazz, Writer writer, List<Method> methodsOfThisClassOnly) throws IOException {
-        for (Method method : methodsOfThisClassOnly) {
+    /**
+     * Writes given listOfStrings with linebreaks between elements
+     *      and one more linebreak at the end.
+     */
+    private static void writeListOfString(Writer writer, List<String> listOfString) throws IOException {
+        for (String string : listOfString) {
+            writer.write(string);
+            writer.write(linebreak);
+        }
+        writer.write(linebreak);
+    }
+
+    /**
+     * Returns String representing method as it would appear in source code.
+     */
+    private static String getStringForMethod(Method method) {
+        try {
+            Writer writer = new StringBuilderWriter();
             writeMethod(writer, method);
+            return writer.toString();
+        } catch (IOException e) {
+            //no IO exception can occur during writing to StringBuilderWriter
+            throw new AssertionError(e);
         }
-        writer.write(linebreak);
     }
 
-    private static void WriteListOfFields(Writer writer, Class<?> clazz, List<Field> fieldsOfThisClassOnly) throws IOException {
-        for (Field field : fieldsOfThisClassOnly) {
+    /**
+     * Returns String representing field as it would appear in source code.
+     */
+    private static String getStringForField(Field field) {
+        try {
+            Writer writer = new StringBuilderWriter();
             writeField(writer, field);
+            return writer.toString();
+        } catch (IOException e) {
+            //no IO exception can occur during writing to StringBuilderWriter
+            throw new AssertionError(e);
         }
-        writer.write(linebreak);
-    }
-
-    /**
-     * Compares methods to equality.
-     * Uses there Modifiers, TypeParameters, ReturnType, ParameterTypes,
-     *  Exceptions and Names to check equivalence
-     */
-    private static boolean MethodsAreEqual(Method a, Method b) {
-        if (a.getModifiers() != b.getModifiers()) {
-            return false;
-        }
-        if (!Arrays.equals(a.getTypeParameters(), b.getTypeParameters())) {
-            return false;
-        }
-        if (!a.getGenericReturnType().equals(b.getGenericReturnType())) {
-            return false;
-        }
-        if (!Arrays.equals(a.getGenericParameterTypes(), b.getGenericParameterTypes())) {
-            return false;
-        }
-        if (!Arrays.equals(a.getGenericExceptionTypes(), b.getGenericExceptionTypes())) {
-            return false;
-        }
-        return a.getName().equals(b.getName());
-    }
-
-    /**
-     * Compares fields to equality.
-     * Uses there Modifiers, Types
-     *  and Names to check equivalence
-     */
-    private static boolean FieldsAreEqual(Field a, Field b) {
-        if (a.getModifiers() != b.getModifiers()) {
-            return false;
-        }
-        if (!a.getGenericType().equals(b.getGenericType())) {
-            return false;
-        }
-        return a.getName().equals(b.getName());
     }
 
     /**
@@ -328,9 +331,11 @@ public class Reflector {
      * Equivalence checked according to MethodsAreEqual method
      * Works in a time equals to the product of amount of methods in first and second class
      */
-    private static List<Method> getDifferentMethods(Class<?> first, Class<?> second) {
-        return Arrays.stream(first.getDeclaredMethods()).
-                filter(x -> Arrays.stream(second.getDeclaredMethods()).noneMatch(y -> MethodsAreEqual(x, y))).collect(Collectors.toList());
+    private static List<String> getDifferentMethods(Class<?> first, Class<?> second) {
+        return Arrays.stream(first.getDeclaredMethods()).map(Reflector::getStringForMethod)
+                .filter(x -> Arrays.stream(second.getDeclaredMethods())
+                        .map(Reflector::getStringForMethod).noneMatch(x::equals))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -339,9 +344,11 @@ public class Reflector {
      * Equivalence checked according to MethodsAreEqual method
      * Works in a time equals to the product of amount of fields in first and second class
      */
-    private static List<Field> getDifferentFields(Class<?> first, Class<?> second) {
-        return Arrays.stream(first.getDeclaredFields()).
-                filter(x -> Arrays.stream(second.getDeclaredFields()).noneMatch(y -> FieldsAreEqual(x, y))).collect(Collectors.toList());
+    private static List<String> getDifferentFields(Class<?> first, Class<?> second) {
+        return Arrays.stream(first.getDeclaredFields()).map(Reflector::getStringForField)
+                .filter(x -> Arrays.stream(second.getDeclaredFields())
+                        .map(Reflector::getStringForField).noneMatch(x::equals))
+                .collect(Collectors.toList());
     }
 
 }
