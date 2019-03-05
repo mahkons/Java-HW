@@ -18,7 +18,7 @@ class MainTest {
     void simpleInteraction() throws IOException {
         var inputFile = new File("src/test/resources/MainTest_simpleInteraction.in");
         var outputFile = new File("src/test/resources/MainTest_simpleInteraction.out");
-        var ansFile = new File("src/test/resources/MainTest_simpleInteraction.out");
+        var ansFile = new File("src/test/resources/MainTest_simpleInteraction.ans");
         try (var inputStream = new FileInputStream(inputFile);
              var printStream = new PrintStream(outputFile)) {
 
