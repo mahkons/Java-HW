@@ -1,23 +1,23 @@
 Writing methods and fields different in ClassForDifference and ClassForDifferenceAnotherOne
 Methods of ClassForDifference only:
-    private static void MethodWithArgsDifferent(List<? super Collection<?> > arg0)
     private int methodWithReturnValue()
+    private static void MethodWithArgsDifferent(List<? super Collection<?> > arg0)
     private void methodWithOtherModifiers()
 
 Methods of ClassForDifferenceAnotherOne only:
+    private T[] methodWithReturnValue()
     private static void MethodWithArgsDifferent(List<? super Collection<? extends List> > arg0)
     public void MethodWithOtherModifiers()
-    private T[] methodWithReturnValue()
 
 Fields of ClassForDifference only:
-    private final String str = null;
-     List<Integer> listInteger = null;
      List<? super K > strangeList = null;
+     List<Integer> listInteger = null;
+    private final String str = null;
     protected int b = 0;
 
 Fields of ClassForDifferenceAnotherOne only:
-    private String str = null;
-     List<Integer> listNotOfInteger = null;
      List<?> strangeList = null;
+     List<Integer> listNotOfInteger = null;
+    private String str = null;
     private int b = 0;
 

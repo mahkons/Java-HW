@@ -349,12 +349,13 @@ public class Reflector {
      *      which has no equal method among methods declared in second class.
      * Equivalence checked according to MethodsAreEqual method
      * Works in a time equals to the product of amount of methods in first and second class
+     * List is sorted for sake of certain order
      */
     private static List<String> getDifferentMethods(Class<?> first, Class<?> second) {
         return Arrays.stream(first.getDeclaredMethods()).map(Reflector::getStringForMethod)
                 .filter(x -> Arrays.stream(second.getDeclaredMethods())
                         .map(Reflector::getStringForMethod).noneMatch(x::equals))
-                .collect(Collectors.toList());
+                .sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     /**
@@ -362,12 +363,13 @@ public class Reflector {
      *      which has no equal field among fields declared in second class.
      * Equivalence checked according to MethodsAreEqual method
      * Works in a time equals to the product of amount of fields in first and second class
+     * List is sorted for sake of certain order
      */
     private static List<String> getDifferentFields(Class<?> first, Class<?> second) {
         return Arrays.stream(first.getDeclaredFields()).map(Reflector::getStringForField)
                 .filter(x -> Arrays.stream(second.getDeclaredFields())
                         .map(Reflector::getStringForField).noneMatch(x::equals))
-                .collect(Collectors.toList());
+                .sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
 }

@@ -3,7 +3,12 @@ package ru.hse.kostya.java;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 import java.io.*;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 
@@ -125,6 +130,20 @@ class ReflectorTest {
 
     }
 
+    public static class ClassForCompile<T, K> {
+        int a;
+        private final String str = null;
+        T[] some;
+        Integer integer;
+
+        protected int b;
+
+        private static void someMethod() {}
+        private void methodWithOtherModifiers() {}
+        private int methodWithReturnValue() { return 0; }
+
+    }
+
     public static class ClassForDifferenceAnotherOne<T> {
         int a;
         private String str = null;
@@ -218,6 +237,35 @@ class ReflectorTest {
             assertTrue(FileUtils.contentEquals(ansFile, outputFile));
         }
 
+    }
+
+    @Test
+    void compile_NestedAndInnerClass() throws IOException, ClassNotFoundException {
+        assertTrue(printCompileAndCheckDiffEmpty(NestedAndInnerClasses.class));
+    }
+
+    @Test
+    void compile_ClassForCompile() throws IOException, ClassNotFoundException {
+        assertTrue(printCompileAndCheckDiffEmpty(ClassForCompile.class));
+    }
+
+    private static boolean printCompileAndCheckDiffEmpty(Class<?> clazz)
+            throws IOException, ClassNotFoundException {
+
+        Reflector.printStructure(clazz);
+
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        compiler.run(null, null, null, clazz.getSimpleName() + ".java");
+        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { new File(".").toURI().toURL() });
+        Class<?> clazzCompiled = Class.forName(clazz.getSimpleName(), true, classLoader);
+
+        var outputFile = new File("src/test/resources/Diff" + clazz.getSimpleName() + ".out");
+        var ansFile = new File("src/test/resources/Diff" + clazz.getSimpleName() + ".ans");
+        try (var printStream = new PrintStream(outputFile)) {
+            System.setOut(printStream);
+            Reflector.diffClasses(clazz, clazzCompiled);
+            return FileUtils.contentEquals(ansFile, outputFile);
+        }
     }
 
 
