@@ -58,7 +58,7 @@ public class Main {
 
         while (isInteracting) {
             int query = 0;
-            System.out.print("Your query: ");
+            System.out.print("Your query:\n");
             try {
                 query = inputScanner.nextInt();
             } catch (InputMismatchException e) {
