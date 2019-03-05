@@ -88,7 +88,7 @@ class ReflectorTest {
 
     }
 
-    static class NestedAndInnerClasses<T> {
+    private static class NestedAndInnerClasses<T> {
         static class Nested {
             final int a = 0;
             protected int f() {return 0; }
@@ -108,8 +108,42 @@ class ReflectorTest {
         }
     }
 
-    //private static class BigAndComplexClass
-    //testing difference between classes
+    public static class ClassForDifference<T, K> {
+        int a;
+        private final String str = null;
+        T[] some;
+        List<Integer> listInteger;
+
+        List<? super K> strangeList;
+        List<? extends Object> niceOne;
+
+        protected int b;
+
+        private static void someMethod() {}
+        private static void MethodWithArgsSame(List<? super Collection<? extends Object>> l) {}
+        private static void MethodWithArgsDifferent(List<? super Collection<? extends Object>> l) {}
+
+
+    }
+
+    public static class ClassForDifferenceAnotherOne<T> {
+        int a;
+        private String str = null;
+        T[] some;
+        List<Integer> listNotOfInteger;
+
+        List<?> strangeList;
+        List<?> niceOne;
+
+        private int b;
+
+        private static void someMethod() {}
+        private static void MethodWithArgsSame(List<? super Collection<? extends Object>> l) {}
+        private static void MethodWithArgsDifferent(List<? super Collection<?>> l) {}
+
+
+    }
+
     @Test
     void simplePrimitives() throws IOException {
         assertTrue(writeToFileAndCheckForEquality(SimplePrimitives.class));
@@ -169,6 +203,13 @@ class ReflectorTest {
     void nestedAndInnerClasses() throws IOException {
         assertTrue(writeToFileAndCheckForEquality(NestedAndInnerClasses.class));
     }
+
+    @Test
+    void difference() throws IOException {
+        var outputFile = new File("src/test/resources/MainTest_simpleInteraction.out");
+        var ansFile = new File("src/test/resources/MainTest_simpleInteraction.out");
+    }
+
 
     private boolean writeToFileAndCheckForEquality(Class<?> clazz) throws IOException {
         Reflector.printStructure(clazz);

@@ -1,7 +1,6 @@
 package ru.hse.kostya.java;
 
 import org.apache.groovy.io.StringBuilderWriter;
-import org.bouncycastle.math.raw.Mod;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FileWriter;
@@ -314,7 +313,7 @@ public class Reflector {
             writeMethod(writer, method);
             return writer.toString();
         } catch (IOException e) {
-            //no IO exception can occur during writing to StringBuilderWriter
+            //no IO exception cannot occur during writing to StringBuilderWriter
             throw new AssertionError(e);
         }
     }
@@ -328,13 +327,13 @@ public class Reflector {
             writeField(writer, field);
             return writer.toString();
         } catch (IOException e) {
-            //no IO exception can occur during writing to StringBuilderWriter
+            //no IO exception cannot occur during writing to StringBuilderWriter
             throw new AssertionError(e);
         }
     }
 
     /**
-     * Return List off all Methods declared in first class,
+     * Return List of all Methods declared in first class,
      *      which has no equal method among methods declared in second class.
      * Equivalence checked according to MethodsAreEqual method
      * Works in a time equals to the product of amount of methods in first and second class
@@ -347,7 +346,7 @@ public class Reflector {
     }
 
     /**
-     * Return List off all Fields declared in first class,
+     * Return List of all Fields declared in first class,
      *      which has no equal field among fields declared in second class.
      * Equivalence checked according to MethodsAreEqual method
      * Works in a time equals to the product of amount of fields in first and second class
