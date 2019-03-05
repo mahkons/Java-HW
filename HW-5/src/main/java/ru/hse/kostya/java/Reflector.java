@@ -23,10 +23,8 @@ public class Reflector {
     /**
      * Writes class structure in a new file in current directory.
      * Name of new file equals to class simple name
-     *
      * Writes class constructors, methods, fields, nested and inner classes
      *      declared in that class
-     *
      * @throws IOException if any problem occurred during writing to file previously named
      */
     public static void printStructure(@NotNull Class<?> someClass) throws IOException {
@@ -37,9 +35,11 @@ public class Reflector {
 
     /**
      * Writes class with declaration and full content.
-     * @param isOuter outermost class modifier should be printed public only, no matter what they were
+     * @param isOuter outermost class modifier should be printed public only,
+     *                no matter what they were
      */
-    private static void printClass(Writer writer, Class<?> someClass, boolean isOuter) throws IOException {
+    private static void printClass(Writer writer, Class<?> someClass, boolean isOuter)
+            throws IOException {
         writeClassDeclaration(writer, someClass, isOuter);
         writer.write(" {" + linebreak + linebreak);
         writeClassContent(writer, someClass);
@@ -49,16 +49,20 @@ public class Reflector {
     /**
      * Writes class name with full List of type parameters.
      */
-    private static void writeClassNameWithType(Writer writer, Class<?> someClass) throws IOException {
+    private static void writeClassNameWithType(Writer writer, Class<?> someClass)
+            throws IOException {
         writer.write(someClass.getSimpleName());
         writeTypesArray(writer, someClass.getTypeParameters(), "<", ", ", ">", true);
     }
 
     /**
-     * Writes class with modifiers, class keyWord, full name with parameters, superclass and implemented interfaces.
-     * @param isOuter outermost class modifier should be printed public only, no matter what they were
+     * Writes class with modifiers, class keyWord, full name with parameters,
+     *      superclass and implemented interfaces.
+     * @param isOuter outermost class modifier should be printed public only,
+     *                no matter what they were
      */
-    private static void writeClassDeclaration(Writer writer, Class<?> someClass, boolean isOuter) throws IOException {
+    private static void writeClassDeclaration(Writer writer, Class<?> someClass, boolean isOuter)
+            throws IOException {
         if (isOuter) {
             writer.write(Modifier.toString(Modifier.PUBLIC));
         } else {
@@ -74,9 +78,9 @@ public class Reflector {
 
     /**
      * Writes all fields, methods, constructors, inner and nested classes.
-     * Methods and constructors bodies are just {@code throw new UnsupportedOperationException statement}
+     * Methods and constructors bodies are just
+     *      {@code throw new UnsupportedOperationException statement}
      * Fields initialized to there default value
-     *
      * All result Stings sorted in natural order for some certainty
      */
     private static void writeClassContent(Writer writer, Class<?> someClass) throws IOException {
@@ -122,14 +126,16 @@ public class Reflector {
      *  Removes {@code extends Object} cause it looks ugly.
      */
     private static Type[] filterUpperBounds(Type[] typeParameters) {
-        return Arrays.stream(typeParameters).filter(x -> !(Object.class.equals(x))).toArray(Type[]::new);
+        return Arrays.stream(typeParameters).filter(x -> !(Object.class.equals(x)))
+                .toArray(Type[]::new);
     }
 
     /**
      * Writes given class, TypeVariable, ParametrizedType, WildcardType or GenericType object.
      * @param isDeclaration settles if TypeVariable should be written with it bounds
      */
-    private static void writeType(Writer writer, Type type, boolean isDeclaration) throws IOException {
+    private static void writeType(Writer writer, Type type, boolean isDeclaration)
+            throws IOException {
 
         if (type instanceof Class<?>) {
             var clazz = (Class<?>)type;
@@ -184,12 +190,14 @@ public class Reflector {
     /**
      * Writes constructor with modifiers, typeParameters and parameters.
      */
-    private static void writeConstructor(Writer writer, Constructor<?> constructor) throws IOException {
+    private static void writeConstructor(Writer writer, Constructor<?> constructor)
+            throws IOException {
         writer.write(indent);
         writer.write(Modifier.toString(constructor.getModifiers()) + " ");
         writeTypesArray(writer, constructor.getTypeParameters(), "<", ", ", "> ", true);
         writer.write(constructor.getDeclaringClass().getSimpleName());
-        writeMethodOrConstructorParameters(writer, constructor.getGenericParameterTypes(), constructor.getGenericExceptionTypes());
+        writeMethodOrConstructorParameters(writer, constructor.getGenericParameterTypes(),
+                constructor.getGenericExceptionTypes());
     }
 
     /**
@@ -202,14 +210,16 @@ public class Reflector {
         writeType(writer, method.getGenericReturnType(), false);
         writer.write(" ");
         writer.write(method.getName());
-        writeMethodOrConstructorParameters(writer, method.getGenericParameterTypes(), method.getGenericExceptionTypes());
+        writeMethodOrConstructorParameters(writer, method.getGenericParameterTypes(),
+                method.getGenericExceptionTypes());
     }
 
     /**
      * Writes parameters and exceptions.
      * Names arguments as arg + positionAmongArguments
      */
-    private static void writeMethodOrConstructorParameters(Writer writer, Type[] genericParameterTypes, Type[] genericExceptionTypes) throws IOException {
+    private static void writeMethodOrConstructorParameters(Writer writer,
+                   Type[] genericParameterTypes, Type[] genericExceptionTypes) throws IOException {
         writer.write("(");
         for (int i = 0; i < genericParameterTypes.length; i++) {
             writeType(writer, genericParameterTypes[i], false);
@@ -236,7 +246,7 @@ public class Reflector {
 
     /**
      * Gets String representing default value for given type
-     *      as it would appear in source code
+     *      as it would appear in source code.
      */
     private static String getDefaultValue(Type type) {
         if (type instanceof Class) {
@@ -260,11 +270,14 @@ public class Reflector {
 
 
     /**
-     * Prints to System.out all methods and fields which exists in exactly one class of the given class.
+     * Prints to System.out all methods and fields which exists in exactly one class
+     *      of the given class.
      */
-    public static void diffClasses(@NotNull Class<?> first, @NotNull Class<?> second) throws IOException {
+    public static void diffClasses(@NotNull Class<?> first, @NotNull Class<?> second)
+            throws IOException {
         try (Writer writer = new PrintWriter(System.out)) {
-            writer.write("Writing methods and fields different in " + first.getSimpleName() + " and " + second.getSimpleName() + "" + linebreak);
+            writer.write("Writing methods and fields different in " + first.getSimpleName()
+                    + " and " + second.getSimpleName() + "" + linebreak);
 
             List<String> methodsOfFirstClassOnly = getDifferentMethods(first, second);
             List<String> methodsOfSecondClassOnly = getDifferentMethods(second, first);
@@ -294,7 +307,8 @@ public class Reflector {
      * Writes given listOfStrings with linebreaks between elements
      *      and one more linebreak at the end.
      */
-    private static void writeListOfString(Writer writer, List<String> listOfString) throws IOException {
+    private static void writeListOfString(Writer writer, List<String> listOfString)
+            throws IOException {
         for (String string : listOfString) {
             writer.write(string);
             writer.write(linebreak);

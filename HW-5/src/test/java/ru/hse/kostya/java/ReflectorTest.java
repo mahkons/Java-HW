@@ -1,13 +1,9 @@
 package ru.hse.kostya.java;
 
 import org.apache.commons.io.FileUtils;
-import org.jetbrains.annotations.NotNull;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
-import java.lang.reflect.WildcardType;
-import java.util.AbstractList;
 import java.util.Collection;
 import java.util.List;
 
