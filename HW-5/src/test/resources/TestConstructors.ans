@@ -1,0 +1,17 @@
+public class TestConstructors extends Object {
+
+    final int some = 0;
+    private TestConstructors() {
+        throw new UnsupportedOperationException();
+    }
+
+    protected TestConstructors(String arg0, int arg1) {
+        throw new UnsupportedOperationException();
+    }
+
+    public TestConstructors(int arg0) {
+        throw new UnsupportedOperationException();
+    }
+
+
+}

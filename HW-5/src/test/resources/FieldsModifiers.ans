@@ -1,0 +1,10 @@
+public class FieldsModifiers extends Object {
+
+    private FieldsModifiers() {
+        throw new UnsupportedOperationException();
+    }
+
+    private int a = 0;
+    protected static final long b = 0;
+
+}

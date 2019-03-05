@@ -3,9 +3,7 @@ package ru.hse.kostya.java;
 import org.apache.groovy.io.StringBuilderWriter;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -265,7 +263,7 @@ public class Reflector {
      * Prints to System.out all methods and fields which exists in exactly one class of the given class.
      */
     public static void diffClasses(@NotNull Class<?> first, @NotNull Class<?> second) throws IOException {
-        try(Writer writer = new FileWriter("DiffOutput.java")) {
+        try (Writer writer = new PrintWriter(System.out)) {
             writer.write("Writing methods and fields different in " + first.getSimpleName() + " and " + second.getSimpleName() + "" + linebreak);
 
             List<String> methodsOfFirstClassOnly = getDifferentMethods(first, second);

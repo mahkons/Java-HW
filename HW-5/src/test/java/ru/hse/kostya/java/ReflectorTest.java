@@ -123,6 +123,9 @@ class ReflectorTest {
         private static void MethodWithArgsSame(List<? super Collection<? extends Object>> l) {}
         private static void MethodWithArgsDifferent(List<? super Collection<? extends Object>> l) {}
 
+        private void methodWithOtherModifiers() {}
+
+        private int methodWithReturnValue() { return 0; }
 
     }
 
@@ -138,8 +141,13 @@ class ReflectorTest {
         private int b;
 
         private static void someMethod() {}
-        private static void MethodWithArgsSame(List<? super Collection<? extends Object>> l) {}
-        private static void MethodWithArgsDifferent(List<? super Collection<?>> l) {}
+        private static void MethodWithArgsSame(List<? super Collection<?>> l) {}
+        private static void MethodWithArgsDifferent(List<? super Collection<? extends List>> l) {}
+
+        public void MethodWithOtherModifiers() {}
+
+        private T[] methodWithReturnValue() { return null; }
+
 
 
     }
@@ -206,8 +214,14 @@ class ReflectorTest {
 
     @Test
     void difference() throws IOException {
-        var outputFile = new File("src/test/resources/MainTest_simpleInteraction.out");
-        var ansFile = new File("src/test/resources/MainTest_simpleInteraction.out");
+        var outputFile = new File("src/test/resources/DiffClass.out");
+        var ansFile = new File("src/test/resources/DiffClass.ans");
+        try (var printStream = new PrintStream(outputFile)) {
+            System.setOut(printStream);
+            Reflector.diffClasses(ClassForDifference.class, ClassForDifferenceAnotherOne.class);
+            assertTrue(FileUtils.contentEquals(ansFile, outputFile));
+        }
+
     }
 
 
