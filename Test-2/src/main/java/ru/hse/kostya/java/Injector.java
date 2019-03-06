@@ -1,36 +1,46 @@
 package ru.hse.kostya.java;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
  * Utility class that initialize objects
+ *      with exactly one parameter using given Classes, which initialized recursively.
  */
 public class Injector {
+
+
+    /** Needs to check existence of cycle dependencies */
+    private static Set<Class<?>> initializingNow = new HashSet<>();
+    /** Needed to initialize every class once only */
+    private static Map<Class<?>, Object> initializedAlready = new HashMap<>();
 
     /**
      * Create and initialize object of `rootClassName` class using classes from
      * `implementationClassNames` for concrete dependencies.
      */
+    public static Object initialize(String rootClassName, List<String> implementationClassNames)
+            throws ClassNotFoundException, IllegalAccessException, AmbiguousImplementationException, ImplementationNotFoundException,
+            InstantiationException, InjectionCycleException, InvocationTargetException {
 
-    private static List<Class<?>> initializingNow = new ArrayList<>();
-    private static Map<Class<?>, Object> initializedAlready = new HashMap<>();
-
-    public static Object initialize(String rootClassName, List<String> implementationClassNames) throws Exception {
         Class<?> clazz = Class.forName(rootClassName);
         var implementationClasses = new ArrayList<Class<?>>();
         for (String className : implementationClassNames) {
             implementationClasses.add(Class.forName(className));
         }
-        return initializeRecursively(clazz, implementationClasses);
+        final Object initializedObject = initializeRecursively(clazz, implementationClasses);
+        initializingNow.clear();
+        initializedAlready.clear();
+        return initializedObject;
     }
 
-    private static Object initializeRecursively(Class<?> clazz, final List<Class<?>> implementationClasses) throws Exception {
+    private static Object initializeRecursively(Class<?> clazz, final List<Class<?>> implementationClasses)
+            throws AmbiguousImplementationException, ImplementationNotFoundException, InjectionCycleException,
+            IllegalAccessException, InvocationTargetException, InstantiationException {
+
         if (clazz.getDeclaredConstructors().length != 1) {
             throw new IllegalStateException("Class " + clazz.getSimpleName() + "ought to have exactly one constructor");
         }
@@ -77,15 +87,23 @@ public class Injector {
 
     }
 
+    /**
+     * All actions needed to be done before initializing class.
+     * Adding class to set of initializing now
+     */
     private static void startInitialization(Class<?> clazz) {
         initializingNow.add(clazz);
     }
 
+    /**
+     * All actions needed to be done after initializing class.
+     * Removes class from set of initializing now
+     * Adds class instance to initialized set
+     */
     private static void endInitialization(Class<?> clazz, Object classInstance) {
-        assert !initializingNow.isEmpty();
-        assert initializingNow.get(initializingNow.size() - 1) == clazz;
+        assert initializingNow.contains(clazz);
 
-        initializingNow.remove(initializingNow.size() - 1);
+        initializingNow.remove(clazz);
         initializedAlready.put(clazz, classInstance);
     }
 }

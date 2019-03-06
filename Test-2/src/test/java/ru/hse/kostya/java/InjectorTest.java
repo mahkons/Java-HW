@@ -43,4 +43,6 @@ public class InjectorTest {
         ClassWithOneInterfaceDependency instance = (ClassWithOneInterfaceDependency) object;
         assertTrue(instance.dependency instanceof InterfaceImpl);
     }
+
+    
 }
