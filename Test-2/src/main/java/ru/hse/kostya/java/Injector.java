@@ -21,6 +21,11 @@ public class Injector {
     /**
      * Create and initialize object of `rootClassName` class using classes from
      * `implementationClassNames` for concrete dependencies.
+     *
+     * @throws ClassNotFoundException if rootClass or one of ImplementationClasses it depends from cannot be bound
+     * @throws AmbiguousImplementationException if more than one class can be used as dependency
+     * @throws ImplementationNotFoundException if there is no class that can be used as dependency
+     * @throws InjectionCycleException if classes rootClass depends from form cyclic dependency
      */
     public static Object initialize(String rootClassName, List<String> implementationClassNames)
             throws ClassNotFoundException, IllegalAccessException, AmbiguousImplementationException, ImplementationNotFoundException,
