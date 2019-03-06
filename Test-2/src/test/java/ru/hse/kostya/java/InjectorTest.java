@@ -1,10 +1,8 @@
 package ru.hse.kostya.java;
 
+import com.intellij.ide.ui.EditorOptionsTopHitProvider;
 import org.junit.Test;
-import task.testClasses.ClassWithOneClassDependency;
-import task.testClasses.ClassWithOneInterfaceDependency;
-import task.testClasses.ClassWithoutDependencies;
-import task.testClasses.InterfaceImpl;
+import task.testClasses.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,11 +71,20 @@ public class InjectorTest {
 
     @Test
     public void injectorCheckInitializingOnlyOnce() throws Exception {
-        Injector.initialize("task.testClasses.TwoDependenciesFromCounter",
+        Object instance = Injector.initialize("task.testClasses.TwoDependenciesFromCounter",
                 List.of("task.testClasses.InitializingOnceOnly"));
+        assertTrue(instance instanceof TwoDependenciesFromCounter);
     }
     @Test
     public void UnaccesableConstructor() throws Exception {
-        Injector.initialize("task.testClasses.UnaccesableConstructor", new ArrayList<>());
+        Object instance = Injector.initialize("task.testClasses.UnaccesableConstructor", new ArrayList<>());
+        assertTrue(instance instanceof UnaccesableConstructor);
+    }
+
+    @Test
+    public void DiamondDependency() throws Exception {
+        Object instance = Injector.initialize("task.testClasses.DiamondDependency",
+                List.of("task.testClasses.RightDiamond", "task.testClasses.LeftDiamond", "task.testClasses.InitializingOnceOnlyAnother"));
+        assertTrue(instance instanceof DiamondDependency);
     }
 }
