@@ -85,7 +85,7 @@ public class Injector {
                 endInitialization(implementationThatTypeClass, typeParameter);
 
             } else {
-                throw new IllegalStateException("Parameter " + type.getTypeName() + " is not just some class");
+                throw new IllegalStateException("Parameter " + type.getTypeName() + " is not just some class or interface");
             }
 
         }
