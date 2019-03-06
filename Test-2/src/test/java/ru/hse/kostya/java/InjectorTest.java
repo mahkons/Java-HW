@@ -7,8 +7,10 @@ import task.testClasses.ClassWithoutDependencies;
 import task.testClasses.InterfaceImpl;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 public class InjectorTest {
@@ -44,5 +46,33 @@ public class InjectorTest {
         assertTrue(instance.dependency instanceof InterfaceImpl);
     }
 
-    
+    @Test
+    public void injectorWithCycleDependencies() throws Exception {
+        assertThrows(InjectionCycleException.class, () -> {
+            Injector.initialize("task.testClasses.ClassFirstDependsFromSecond",
+                    List.of("task.testClasses.ClassFirstDependsFromSecond", "task.testClasses.ClassSecondDependsFromFirst"));
+        });
+    }
+
+    @Test
+    public void injectorWithAmbiguousChoose() throws Exception {
+        assertThrows(AmbiguousImplementationException.class, () -> {
+            Injector.initialize("task.testClasses.ClassWithOneInterfaceDependency",
+                    List.of("task.testClasses.InterfaceImpl", "task.testClasses.SecondInterfaceImpl"));
+        });
+    }
+
+    @Test
+    public void injectorWithNoImplementation() throws Exception {
+        assertThrows(ImplementationNotFoundException.class, () -> {
+            Injector.initialize("task.testClasses.ClassWithOneInterfaceDependency",
+                    List.of("task.testClasses.ClassWithOneInterfaceDependency", "task.testClasses.ClassFirstDependsFromSecond"));
+        });
+    }
+
+    @Test
+    public void injectorCheckInitializingOnlyOnce() throws Exception {
+        Injector.initialize("task.testClasses.TwoDependenciesFromCounter",
+                List.of("task.testClasses.InitializingOnceOnly"));
+    }
 }
