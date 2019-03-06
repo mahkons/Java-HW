@@ -54,10 +54,11 @@ public class Injector {
 
                 startInitialization(implementationThatTypeClass);
                 Object typeParameter = initializeRecursively(implementationThatTypeClass, implementationClasses);
+                initializedParameters.add(typeParameter);
                 endInitialization(implementationThatTypeClass);
 
             } else {
-                throw new IllegalStateException("Parameter " + type.getTypeName() +" is not just some class");
+                throw new IllegalStateException("Parameter " + type.getTypeName() + " is not just some class");
             }
 
         }
