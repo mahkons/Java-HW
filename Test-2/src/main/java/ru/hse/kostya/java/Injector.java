@@ -1,5 +1,7 @@
 package ru.hse.kostya.java;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
@@ -27,7 +29,7 @@ public class Injector {
      * @throws ImplementationNotFoundException if there is no class that can be used as dependency
      * @throws InjectionCycleException if classes rootClass depends from form cyclic dependency
      */
-    public static Object initialize(String rootClassName, List<String> implementationClassNames)
+    public static Object initialize(@NotNull String rootClassName, @NotNull List<String> implementationClassNames)
             throws ClassNotFoundException, IllegalAccessException, AmbiguousImplementationException, ImplementationNotFoundException,
             InstantiationException, InjectionCycleException, InvocationTargetException {
 
