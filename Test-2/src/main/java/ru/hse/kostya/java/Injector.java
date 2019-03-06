@@ -3,9 +3,14 @@ package ru.hse.kostya.java;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
+/**
+ * Utility class that initialize objects
+ */
 public class Injector {
 
     /**
@@ -14,6 +19,7 @@ public class Injector {
      */
 
     private static List<Class<?>> initializingNow = new ArrayList<>();
+    private static Map<Class<?>, Object> initializedAlready = new HashMap<>();
 
     public static Object initialize(String rootClassName, List<String> implementationClassNames) throws Exception {
         Class<?> clazz = Class.forName(rootClassName);
@@ -35,6 +41,11 @@ public class Injector {
         for (Type type : parameterTypes) {
             if (type instanceof Class) {
                 var typeClass = (Class<?>)type;
+                if (initializedAlready.containsKey(typeClass)) {
+                    initializedParameters.add(initializedAlready.get(typeClass));
+                    continue;
+                }
+
                 Class<?> implementationThatTypeClass = null;
                 for (Class<?> someClass : implementationClasses) {
                     if (typeClass.isAssignableFrom(someClass)) {
@@ -55,7 +66,7 @@ public class Injector {
                 startInitialization(implementationThatTypeClass);
                 Object typeParameter = initializeRecursively(implementationThatTypeClass, implementationClasses);
                 initializedParameters.add(typeParameter);
-                endInitialization(implementationThatTypeClass);
+                endInitialization(implementationThatTypeClass, typeParameter);
 
             } else {
                 throw new IllegalStateException("Parameter " + type.getTypeName() + " is not just some class");
@@ -70,9 +81,11 @@ public class Injector {
         initializingNow.add(clazz);
     }
 
-    private static void endInitialization(Class<?> clazz) {
+    private static void endInitialization(Class<?> clazz, Object classInstance) {
         assert !initializingNow.isEmpty();
         assert initializingNow.get(initializingNow.size() - 1) == clazz;
+
         initializingNow.remove(initializingNow.size() - 1);
+        initializedAlready.put(clazz, classInstance);
     }
 }
