@@ -6,6 +6,7 @@ import task.testClasses.ClassWithOneInterfaceDependency;
 import task.testClasses.ClassWithoutDependencies;
 import task.testClasses.InterfaceImpl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -74,5 +75,9 @@ public class InjectorTest {
     public void injectorCheckInitializingOnlyOnce() throws Exception {
         Injector.initialize("task.testClasses.TwoDependenciesFromCounter",
                 List.of("task.testClasses.InitializingOnceOnly"));
+    }
+    @Test
+    public void UnaccesableConstructor() throws Exception {
+        Injector.initialize("task.testClasses.UnaccesableConstructor", new ArrayList<>());
     }
 }

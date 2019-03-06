@@ -46,6 +46,7 @@ public class Injector {
         }
 
         Constructor<?> constructor = clazz.getDeclaredConstructors()[0];
+        constructor.setAccessible(true);
         Type[] parameterTypes = constructor.getGenericParameterTypes();
         List<Object> initializedParameters = new ArrayList<>();
         for (Type type : parameterTypes) {
