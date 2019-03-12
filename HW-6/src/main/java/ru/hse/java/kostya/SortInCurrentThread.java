@@ -44,7 +44,11 @@ public class SortInCurrentThread {
         return;
     }
 
-    public static <T> void compute(int leftBound, int rightBound, List<T> list) {
+    /**
+     * If array is small uses InsertionSort,
+     *  otherwise does partition, splits array in two parts and sorts them recursively.
+     */
+    private static <T> void compute(int leftBound, int rightBound, List<T> list) {
         if (rightBound - leftBound < LOWER_BOUND_FOR_INSERTION_SORT) {
             insertionSort(leftBound, rightBound, list);
             return;
@@ -55,16 +59,12 @@ public class SortInCurrentThread {
         compute(pivot + 1, rightBound, list);
     }
 
-    /**
-     * If array is small uses InsertionSort,
-     *  otherwise does partition, splits array in two parts and sorts them recursively.
-     */
     private static <T> int partition(int left, int right, List<T> list, int pivotIndex) {
         T pivotValue = list.get(pivotIndex);
         Collections.swap(list, pivotIndex, right - 1);
         int storeIndex = left;
-        for(int i = left; i < right; i++) {
-            if(isBigger(pivotValue, list.get(i))) {
+        for (int i = left; i < right; i++) {
+            if (isBigger(pivotValue, list.get(i))) {
                 Collections.swap(list, storeIndex, i);
                 storeIndex++;
             }

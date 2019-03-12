@@ -80,8 +80,8 @@ public class Sorter {
             T pivotValue = data.get(pivotIndex);
             Collections.swap(data, pivotIndex, rightBound - 1);
             int storeIndex = leftBound;
-            for(int i = leftBound; i < rightBound; i++) {
-                if(isSmaller(data.get(i), pivotValue)) {
+            for (int i = leftBound; i < rightBound; i++) {
+                if (isSmaller(data.get(i), pivotValue)) {
                     Collections.swap(data, storeIndex, i);
                     storeIndex++;
                 }
