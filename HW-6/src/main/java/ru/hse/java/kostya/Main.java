@@ -5,6 +5,10 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+/**
+ * Class made to compare SingleThread sort with MultithreadedSort.
+ * It runs different sort implementations on few different inputs and prints time of running up to nanoseconds
+ */
 public class Main {
 
     private static ArrayList<Integer> generateIntegerList(int length) {
@@ -45,6 +49,7 @@ public class Main {
         System.out.println("\n");
     }
 
+    //on my machine with length 100_000 and more multithreaded version is faster
     public static void main(String[] args) throws Exception {
         compareSorts(10_000);
         compareSorts(50_000);
