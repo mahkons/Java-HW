@@ -7,22 +7,37 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.RandomAccess;
 
+/**
+ * Class that sorts given List of elements according to there naturalOrder or given comparator.
+ * Uses quickSort as algorithm for sorting
+ * Accepts List with RandomAccess order as argument
+ * Implementation is Singlethreaded
+ */
 public class SortInCurrentThread {
 
     private static Comparator<?> comparator;
-    private static final byte[] DEFAULT_SEED = "179".toString().getBytes();
+    private static final byte[] DEFAULT_SEED = "179".getBytes();
     private static SecureRandom random = new SecureRandom(DEFAULT_SEED);
     private static final int LOWER_BOUND_FOR_INSERTION_SORT = 40;
 
+    /**
+     * Allows changing seed for quickSort algorithm.
+     */
     public static void setSeed(long seed) {
         random.setSeed(seed);
     }
 
+    /**
+     * Sorts given list according to natural order of its elements.
+     */
     public static <T extends Comparable<? super T>, L extends List<T> & RandomAccess> void sort(L list) {
         sort(list, Comparator.naturalOrder());
         return;
     }
 
+    /**
+     * Sorts list according to provided comparator.
+     */
     public static <T, L extends List<T> & RandomAccess> void sort(L list, Comparator<? super T> comparatorParameter) {
         comparator = comparatorParameter;
         compute(0, list.size(), list);
@@ -40,6 +55,10 @@ public class SortInCurrentThread {
         compute(pivot + 1, rightBound, list);
     }
 
+    /**
+     * If array is small uses InsertionSort,
+     *  otherwise does partition, splits array in two parts and sorts them recursively.
+     */
     private static <T> int partition(int left, int right, List<T> list, int pivotIndex) {
         T pivotValue = list.get(pivotIndex);
         Collections.swap(list, pivotIndex, right - 1);
@@ -62,6 +81,9 @@ public class SortInCurrentThread {
         }
     }
 
+    /**
+     * Compares elements according to comparator.
+     */
     private static <T> boolean isBigger(T first, T second) {
         @SuppressWarnings("unchecked")
         final boolean result = ((Comparator<? super T>)comparator).compare(first, second) > 0;
