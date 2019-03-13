@@ -1,5 +1,7 @@
 package ru.hse.java.kostya;
 
+import com.sun.istack.NotNull;
+
 import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,7 +33,7 @@ public class Sorter {
     /**
      * Sorts given list according to natural order of its elements.
      */
-    public static <T extends Comparable<? super T>, L extends List<T> & RandomAccess> void sort(L list) {
+    public static <T extends Comparable<? super T>, L extends List<T> & RandomAccess> void sort(@NotNull L list) {
         sort(list, Comparator.naturalOrder());
         return;
     }
@@ -39,7 +41,7 @@ public class Sorter {
     /**
      * Sorts list according to provided comparator.
      */
-    public static <T, L extends List<T> & RandomAccess> void sort(L list, Comparator<? super T> comparatorParameter) {
+    public static <T, L extends List<T> & RandomAccess> void sort(@NotNull L list, @NotNull Comparator<? super T> comparatorParameter) {
         comparator = comparatorParameter;
         var pool = new ForkJoinPool();
         pool.invoke(new QuickSort<>(0, list.size(), list));
