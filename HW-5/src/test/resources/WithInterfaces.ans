@@ -1,0 +1,12 @@
+public class WithInterfaces extends Object implements Serializable, Comparable<Object> {
+
+    private WithInterfaces() {
+        throw new UnsupportedOperationException();
+    }
+
+    public int compareTo(Object arg0) {
+        throw new UnsupportedOperationException();
+    }
+
+
+}

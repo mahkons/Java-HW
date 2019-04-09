@@ -1,0 +1,11 @@
+public class GenericFields<T extends List<Object>, S> extends Object {
+
+     S[] b = null;
+     T a = null;
+    final List<S> l = null;
+    private GenericFields() {
+        throw new UnsupportedOperationException();
+    }
+
+
+}

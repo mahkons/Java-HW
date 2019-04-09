@@ -1,5 +1,5 @@
 #Gitignore itself
-#.gitignore
+# .gitignore
 
 #vim temporary files
 *.swp

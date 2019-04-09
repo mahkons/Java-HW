@@ -1,0 +1,50 @@
+public class NestedAndInnerClasses<T> extends Object {
+
+    private NestedAndInnerClasses() {
+        throw new UnsupportedOperationException();
+    }
+
+public class InnerClass extends Object {
+
+     int f() {
+        throw new UnsupportedOperationException();
+    }
+
+    final int a = 0;
+    public InnerClass(NestedAndInnerClasses arg0) {
+        throw new UnsupportedOperationException();
+    }
+
+
+}
+
+static class Nested extends Object {
+
+     Nested() {
+        throw new UnsupportedOperationException();
+    }
+
+    final int a = 0;
+    protected int f() {
+        throw new UnsupportedOperationException();
+    }
+
+static class NestedInNested extends Object {
+
+     NestedInNested() {
+        throw new UnsupportedOperationException();
+    }
+
+     int otherFunction(int arg0) {
+        throw new UnsupportedOperationException();
+    }
+
+    static int b = 0;
+
+}
+
+
+}
+
+
+}

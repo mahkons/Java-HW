@@ -1,0 +1,28 @@
+public class GenericMethods<T, S> extends Object {
+
+     <E extends List<S>, K> S hardOne(E arg0) {
+        throw new UnsupportedOperationException();
+    }
+
+     <E extends T> void complexParameter(E arg0) {
+        throw new UnsupportedOperationException();
+    }
+
+     <E, K> S withComplexArg(List<S> arg0) {
+        throw new UnsupportedOperationException();
+    }
+
+     <E> T parametrized(E arg0) {
+        throw new UnsupportedOperationException();
+    }
+
+     T simple() {
+        throw new UnsupportedOperationException();
+    }
+
+    private GenericMethods() {
+        throw new UnsupportedOperationException();
+    }
+
+
+}
