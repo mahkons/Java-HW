@@ -1,0 +1,9 @@
+public class WithSuperClass extends Exception {
+
+     int a = 0;
+    private WithSuperClass() {
+        throw new UnsupportedOperationException();
+    }
+
+
+}

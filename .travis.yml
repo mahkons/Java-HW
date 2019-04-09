@@ -1,7 +1,9 @@
 language: java
 jdk: oraclejdk11
 os: linux
+
 services: mongodb
+
 
 script: for PROJECT_DIR in */; do (cd "$PROJECT_DIR" && ./gradlew check); done
 
