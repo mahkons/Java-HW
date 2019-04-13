@@ -16,7 +16,9 @@ public class ThreadPool {
     private BlockingQueue<PoolTask<?>> tasksQueue = new BlockingQueue<>();
     private Thread[] threads;
 
-    /** Creates ThreadPool with {@code Runtime.getRuntime().availableProcessors()} threads.*/
+    /**
+     * Creates ThreadPool with {@code Runtime.getRuntime().availableProcessors()} threads.
+     */
     public ThreadPool() {
         this(Runtime.getRuntime().availableProcessors());
     }
@@ -62,7 +64,7 @@ public class ThreadPool {
         @Override
         public void run() {
             try {
-                while(!Thread.interrupted()) {
+                while (!Thread.interrupted()) {
                     PoolTask<?> task = tasksQueue.take();
                     task.makeReady();
                 }

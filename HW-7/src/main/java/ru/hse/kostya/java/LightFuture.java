@@ -7,7 +7,7 @@ import java.util.function.Function;
  */
 public interface LightFuture<T> {
 
-    /** Returns true if task is executed and false otherwise */
+    /** Returns true if task is executed and false otherwise. */
     boolean isReady();
 
     /**
