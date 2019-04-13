@@ -45,7 +45,7 @@ class BlockingQueueTest {
     private static class ObjectWithFlag {
         private boolean flag;
 
-        public synchronized void markFlag() {
+        private synchronized void markFlag() {
             if (flag) {
                 throw new AssertionError("Flag should be marked once only");
             }
@@ -64,16 +64,14 @@ class BlockingQueueTest {
             }
         }));
 
-        Arrays.setAll(consumers, (i) -> new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    for (int j = 0; j < 100; j++) {
-                        ObjectWithFlag objectWithFlag = objectWithFlagBlockingQueue.take();
-                    }
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+        Arrays.setAll(consumers, (i) -> new Thread(() -> {
+            try {
+                for (int j = 0; j < 100; j++) {
+                    ObjectWithFlag objectWithFlag = objectWithFlagBlockingQueue.take();
+                    objectWithFlag.markFlag();
                 }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }));
 
