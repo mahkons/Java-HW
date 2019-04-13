@@ -3,6 +3,11 @@ package ru.hse.kostya.java;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Parametrized queue,
+ *  which contains elements of given type
+ *  and synchronises on every add and take operation.
+ */
 public class BlockingQueue<T> {
 
     private List<T> queue = new LinkedList<>();

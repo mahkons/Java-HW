@@ -4,15 +4,27 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Fixed size thread pool.
+ * Tasks saved in shared queue
+ * On construction starts threads, whose take tasks from queue head
+ * Pushes new tasks in the tail of the queue
+ * The threads exist and execute tasks until shutdown method is called
+ */
 public class ThreadPool {
 
     private BlockingQueue<PoolTask<?>> tasksQueue = new BlockingQueue<>();
     private Thread[] threads;
 
+    /** Creates ThreadPool with {@code Runtime.getRuntime().availableProcessors()} threads.*/
     public ThreadPool() {
         this(Runtime.getRuntime().availableProcessors());
     }
 
+    /**
+     * Creates ThreadPool with given numbers threads.
+     * Initializes and starts threads
+     */
     public ThreadPool(int threadNumber) {
         threads = new Thread[threadNumber];
         Arrays.setAll(threads, (i) -> new Thread(new PoolWorker()));
@@ -21,18 +33,30 @@ public class ThreadPool {
         }
     }
 
+    /**
+     * Adds new task to poolQueue.
+     * Task is to execute suppliers get method
+     */
     public <T> LightFuture<T> submit(Supplier<T> supplier) {
         PoolTask<T> task = new PoolTask<>(supplier);
         tasksQueue.add(task);
         return task;
     }
 
+    /**
+     * Interrupts all threads in pool.
+     * Running now tasks will be finished, but no more will start execution
+     */
     public void shutdown() {
         for (Thread thread : threads) {
             thread.interrupt();
         }
     }
 
+    /** Worker of the pool.
+     *  Run function consists of main loop of every Thread in pool
+     *      in which tasks are removed from the queue and executed
+     */
     private class PoolWorker implements Runnable {
 
         @Override
@@ -50,6 +74,9 @@ public class ThreadPool {
         }
     }
 
+    /**
+     *  LightFuture Interface implementation for ThreadPool.
+     */
     private class PoolTask<T> implements LightFuture<T> {
 
         private final Supplier<T> supplier;
@@ -77,17 +104,12 @@ public class ThreadPool {
         }
 
         @Override
-        public synchronized T get() throws LightExecutionException {
-            try {
-                while (!isReady) {
-                    wait();
-                }
-            } catch (InterruptedException exception) {
-                this.exception = exception;
+        public synchronized T get() throws LightExecutionException, InterruptedException {
+            while (!isReady) {
+                wait();
             }
-
             if (exception != null) {
-                throw new LightExecutionException("Exception occured during execution", exception);
+                throw new LightExecutionException("Exception occurred during execution", exception);
             }
             return result;
         }
