@@ -1,5 +1,7 @@
 package ru.hse.kostya.java;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -86,7 +88,7 @@ public class ThreadPool {
         private Exception exception;
         private T result;
 
-        public PoolTask(Supplier<T> supplier) {
+        public PoolTask(@NotNull Supplier<T> supplier) {
             this.supplier = supplier;
         }
 
@@ -117,7 +119,7 @@ public class ThreadPool {
         }
 
         @Override
-        public <R> LightFuture<R> thenApply(Function<? super T, R> function) {
+        public <R> LightFuture<R> thenApply(@NotNull Function<? super T, R> function) {
             PoolTask<R> task = new PoolTask<>(() -> {
                 try {
                     return function.apply(PoolTask.this.get());
