@@ -22,6 +22,7 @@ public class ThreadPoolTest {
             }
             flag = true;
         }
+
         private synchronized void doSomeWork() {
             for (int i = 0; i < 100; i++) {
                 counter = -counter * counter + counter + 1;
@@ -30,7 +31,7 @@ public class ThreadPoolTest {
     }
 
     private Supplier<TaskObject> supplier = () -> {
-        TaskObject taskObject = new TaskObject();
+        var taskObject = new TaskObject();
         taskObject.doSomeWork();
         return taskObject;
     };

@@ -42,7 +42,7 @@ public class ThreadPool {
      * Task is to execute suppliers get method
      */
     public <T> LightFuture<T> submit(Supplier<T> supplier) {
-        PoolTask<T> task = new PoolTask<>(supplier);
+        var task = new PoolTask<>(supplier);
         tasksQueue.add(task);
         return task;
     }
@@ -83,10 +83,10 @@ public class ThreadPool {
      */
     private class PoolTask<T> implements LightFuture<T> {
 
-        private final Supplier<T> supplier;
-        private boolean isReady;
-        private Exception exception;
-        private T result;
+        private volatile Supplier<T> supplier;
+        private volatile boolean isReady;
+        private volatile Exception exception;
+        private volatile T result;
 
         public PoolTask(@NotNull Supplier<T> supplier) {
             this.supplier = supplier;
@@ -98,12 +98,14 @@ public class ThreadPool {
             } catch (Exception exception) {
                 this.exception = exception;
             }
+            supplier = null;
+
             isReady = true;
             notifyAll();
         }
 
         @Override
-        public synchronized boolean isReady() {
+        public boolean isReady() {
             return isReady;
         }
 

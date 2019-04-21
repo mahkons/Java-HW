@@ -30,7 +30,7 @@ class BlockingQueueTest {
 
     @Test
     void testWaitingForElementAddition() throws InterruptedException {
-        Thread actor = new Thread(() -> {
+        var actor = new Thread(() -> {
             try {
                 assertEquals(Integer.valueOf(1), integerBlockingQueue.take());
             } catch (InterruptedException e) {
@@ -43,6 +43,7 @@ class BlockingQueueTest {
     }
 
     private static class ObjectWithFlag {
+
         private boolean flag;
 
         private synchronized void markFlag() {
@@ -55,8 +56,8 @@ class BlockingQueueTest {
 
     @Test
     void testDataRaces() throws InterruptedException {
-        Thread[] producers = new Thread[1000];
-        Thread[] consumers = new Thread[5000];
+        var producers = new Thread[1000];
+        var consumers = new Thread[5000];
 
         Arrays.setAll(producers, (i) -> new Thread(() -> {
             for (int j = 0; j < 500; j++) {
