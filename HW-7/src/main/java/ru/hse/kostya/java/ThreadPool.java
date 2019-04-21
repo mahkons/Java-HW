@@ -2,7 +2,9 @@ package ru.hse.kostya.java;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -17,6 +19,7 @@ public class ThreadPool {
 
     private BlockingQueue<PoolTask<?>> tasksQueue = new BlockingQueue<>();
     private Thread[] threads;
+    private volatile boolean shutdown;
 
     /**
      * Creates ThreadPool with {@code Runtime.getRuntime().availableProcessors()} threads.
@@ -28,8 +31,13 @@ public class ThreadPool {
     /**
      * Creates ThreadPool with given numbers threads.
      * Initializes and starts threads
+     * @throws IllegalArgumentException if number of threads is zero or negative
      */
     public ThreadPool(int threadNumber) {
+        if (threadNumber <= 0) {
+            throw new IllegalArgumentException("Number of threads should be positive");
+        }
+
         threads = new Thread[threadNumber];
         Arrays.setAll(threads, (i) -> new Thread(new PoolWorker()));
         for (Thread thread : threads) {
@@ -40,8 +48,13 @@ public class ThreadPool {
     /**
      * Adds new task to poolQueue.
      * Task is to execute suppliers get method
+     * @throws IllegalStateException if shutdown function had been called already
      */
-    public <T> LightFuture<T> submit(Supplier<T> supplier) {
+    public <T> LightFuture<T> submit(@NotNull Supplier<T> supplier) {
+        if (shutdown) {
+            throw new IllegalStateException("Shutdown happened. No more tasks accepted");
+        }
+
         var task = new PoolTask<>(supplier);
         tasksQueue.add(task);
         return task;
@@ -50,8 +63,11 @@ public class ThreadPool {
     /**
      * Interrupts all threads in pool.
      * Running now tasks will be finished, but no more will start execution
+     * Not waiting for current tasks to finish
+     * There may remain tasks in queue, which never will start execution
      */
     public void shutdown() {
+        shutdown = true;
         for (Thread thread : threads) {
             thread.interrupt();
         }
@@ -85,14 +101,16 @@ public class ThreadPool {
 
         private volatile Supplier<T> supplier;
         private volatile boolean isReady;
-        private volatile Exception exception;
-        private volatile T result;
+        private Exception exception;
+        private T result;
+
+        private final List<PoolTask<?>> applyAfter = new ArrayList<>();
 
         public PoolTask(@NotNull Supplier<T> supplier) {
             this.supplier = supplier;
         }
 
-        private synchronized void makeReady() {
+        private void makeReady() {
             try {
                 result = supplier.get();
             } catch (Exception exception) {
@@ -101,7 +119,12 @@ public class ThreadPool {
             supplier = null;
 
             isReady = true;
-            notifyAll();
+            synchronized (applyAfter) {
+                applyAfter.forEach(task -> tasksQueue.add(task));
+            }
+            synchronized (this) {
+                notifyAll();
+            }
         }
 
         @Override
@@ -110,10 +133,20 @@ public class ThreadPool {
         }
 
         @Override
-        public synchronized T get() throws LightExecutionException, InterruptedException {
-            while (!isReady) {
-                wait();
+        public T get() throws LightExecutionException, InterruptedException {
+            if (isReady) {
+                return getResult();
             }
+
+            synchronized (this) {
+                while (!isReady) {
+                    wait();
+                }
+                return getResult();
+            }
+        }
+
+        private T getResult() throws LightExecutionException {
             if (exception != null) {
                 throw new LightExecutionException("Exception occurred during execution", exception);
             }
@@ -122,14 +155,24 @@ public class ThreadPool {
 
         @Override
         public <R> LightFuture<R> thenApply(@NotNull Function<? super T, R> function) {
-            PoolTask<R> task = new PoolTask<>(() -> {
+            var task = new PoolTask<>(() -> {
                 try {
-                    return function.apply(PoolTask.this.get());
-                } catch (Exception e) {
-                    throw new RuntimeException("Cannot get result to apply function to", e);
+                    return function.apply(getResult());
+                } catch (LightExecutionException e) {
+                    throw new RuntimeException("Cannot get result to apply function to", e.getCause());
                 }
             });
-            tasksQueue.add(task);
+            if (isReady) {
+                tasksQueue.add(task);
+            } else {
+                synchronized (applyAfter) {
+                    if (isReady) {
+                        tasksQueue.add(task);
+                    } else {
+                        applyAfter.add(task);
+                    }
+                }
+            }
             return task;
         }
     }

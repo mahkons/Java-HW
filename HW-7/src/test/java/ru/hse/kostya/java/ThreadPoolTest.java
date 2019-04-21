@@ -37,8 +37,8 @@ public class ThreadPoolTest {
     };
 
     private void fixedAmountOfTasks(int numberOfThreads, int numberOfTasks) throws InterruptedException, LightExecutionException {
-        ThreadPool threadPool = new ThreadPool(numberOfThreads);
-        List<LightFuture<TaskObject>> results = new ArrayList<>();
+        var threadPool = new ThreadPool(numberOfThreads);
+        var results = new ArrayList<LightFuture<TaskObject>>();
         for (int i = 0; i < numberOfTasks; i++) {
             results.add(threadPool.submit(supplier));
         }
@@ -49,10 +49,10 @@ public class ThreadPoolTest {
     }
 
     private void tasksConsumersAndProducers(int numberOfThreads, int numberOfProducers, int numberOfConsumers) throws InterruptedException {
-        ThreadPool threadPool = new ThreadPool(numberOfThreads);
-        Thread[] producers = new Thread[numberOfProducers];
-        Thread[] consumers = new Thread[numberOfConsumers];
-        BlockingQueue<LightFuture<TaskObject>> queue = new BlockingQueue<>();
+        var threadPool = new ThreadPool(numberOfThreads);
+        var producers = new Thread[numberOfProducers];
+        var consumers = new Thread[numberOfConsumers];
+        var queue = new BlockingQueue<LightFuture<TaskObject>>();
 
         Arrays.setAll(producers, (i) -> new Thread(() -> {
             for (int j = 0; j < numberOfConsumers; j++) {
@@ -113,7 +113,7 @@ public class ThreadPoolTest {
 
     @Test
     void throwingLightExecutionException() {
-        ThreadPool threadPool = new ThreadPool();
+        var threadPool = new ThreadPool();
         assertThrows(LightExecutionException.class, () -> {
            LightFuture lightFuture = threadPool.submit(() -> {
                throw new RuntimeException();
@@ -124,27 +124,19 @@ public class ThreadPoolTest {
 
     @Test
     void testShutdown() throws Exception {
-        ThreadPool threadPool = new ThreadPool(10);
+        var threadPool = new ThreadPool(10);
         List<LightFuture<Integer>> tasksBeforeShutdown = new ArrayList<>();
         for (int i  = 0; i < 1000; i++) {
             final int ii = i;
             tasksBeforeShutdown.add(threadPool.submit(() -> ii));
         }
         threadPool.shutdown();
-        List<LightFuture<Integer>> tasksAfterShutdown = new ArrayList<>();
-        for (int i  = 0; i < 1000; i++) {
-            final int ii = i;
-            tasksAfterShutdown.add(threadPool.submit(() -> ii));
-        }
+        assertThrows(IllegalStateException.class, () -> threadPool.submit(() -> 239));
 
         for (int i = 0; i < 1000; i++) {
             if (tasksBeforeShutdown.get(i).isReady()) {
                 assertEquals(Integer.valueOf(i), tasksBeforeShutdown.get(i).get());
             }
-        }
-
-        for (LightFuture<Integer> lightFuture : tasksAfterShutdown) {
-            assertFalse(lightFuture.isReady());
         }
     }
 
