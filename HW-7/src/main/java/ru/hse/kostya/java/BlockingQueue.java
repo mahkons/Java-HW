@@ -12,6 +12,9 @@ public class BlockingQueue<T> {
 
     private List<T> queue = new LinkedList<>();
 
+    /**
+     * Adds element to the tail of queue;
+     */
     public synchronized void add(T element) {
         queue.add(element);
         if (queue.size() == 1) {
@@ -19,6 +22,10 @@ public class BlockingQueue<T> {
         }
     }
 
+    /**
+     * Removes head element of the queue and returns it.
+     * If queue is empty waits for add operation
+     */
     public synchronized T take() throws InterruptedException {
         while (queue.isEmpty()) {
             wait();
