@@ -21,6 +21,7 @@ plugins {
     id 'org.openjfx.javafxplugin' version '0.0.7'
 }
 
+
 apply plugin: 'org.jetbrains.intellij'
 apply plugin: 'java'
 
@@ -33,7 +34,7 @@ repositories {
     mavenCentral()
 }
 
-mainClassName = 'ru/hse/java/kostya/ScorchedEarthGame'
+mainClassName = 'ru.hse.java.kostya.ScorchedEarthGame'
 
 dependencies {
     testCompile('org.junit.jupiter:junit-jupiter-api:5.3.2')
@@ -42,7 +43,7 @@ dependencies {
 }
 
 javafx {
-    version = "12"
+    version = "12.0.1"
     modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
 
