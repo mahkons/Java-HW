@@ -7,4 +7,6 @@ public interface Sprite {
     void draw(GraphicsContext graphicsContext);
 
     void update(double timeNano);
+
+    boolean alive();
 }
