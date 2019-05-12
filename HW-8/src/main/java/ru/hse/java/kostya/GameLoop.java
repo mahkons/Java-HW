@@ -23,8 +23,10 @@ public class GameLoop {
 
     private List<Sprite> spriteList = new ArrayList<>();
     private final Cannon cannon = new Cannon(WIDTH / 2.0);
+    private final Landscape landscape = new Landscape();
     {
         spriteList.add(cannon);
+        spriteList.add(landscape);
     }
 
     private double lastNanoTime = System.nanoTime();
