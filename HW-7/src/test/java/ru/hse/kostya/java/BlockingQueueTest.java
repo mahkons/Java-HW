@@ -42,6 +42,19 @@ class BlockingQueueTest {
         actor.join();
     }
 
+    @Test
+    void testEmpty() throws InterruptedException {
+        assertTrue(integerBlockingQueue.isEmpty());
+        integerBlockingQueue.add(1);
+        assertFalse(integerBlockingQueue.isEmpty());
+        integerBlockingQueue.add(2);
+        assertFalse(integerBlockingQueue.isEmpty());
+        integerBlockingQueue.take();
+        assertFalse(integerBlockingQueue.isEmpty());
+        integerBlockingQueue.take();
+        assertTrue(integerBlockingQueue.isEmpty());
+    }
+
     private static class ObjectWithFlag {
 
         private boolean flag;

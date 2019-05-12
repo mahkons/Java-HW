@@ -5,6 +5,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -17,9 +21,10 @@ import java.util.function.Supplier;
  */
 public class ThreadPool {
 
-    private BlockingQueue<PoolTask<?>> tasksQueue = new BlockingQueue<>();
-    private Thread[] threads;
+    private final BlockingQueue<PoolTask<?>> tasksQueue = new BlockingQueue<>();
+    private final Thread[] threads;
     private volatile boolean shutdown;
+    private final CountDownLatch terminationLatch;
 
     /**
      * Creates ThreadPool with {@code Runtime.getRuntime().availableProcessors()} threads.
@@ -37,6 +42,7 @@ public class ThreadPool {
         if (threadNumber <= 0) {
             throw new IllegalArgumentException("Number of threads should be positive");
         }
+        terminationLatch = new CountDownLatch(threadNumber);
 
         threads = new Thread[threadNumber];
         Arrays.setAll(threads, (i) -> new Thread(new PoolWorker()));
@@ -55,22 +61,54 @@ public class ThreadPool {
             throw new IllegalStateException("Shutdown happened. No more tasks accepted");
         }
 
-        var task = new PoolTask<>(supplier);
-        tasksQueue.add(task);
-        return task;
+        return submit(new PoolTask<>(supplier));
+    }
+
+    /**
+     * Adds new task to poolQueue.
+     * Rejects task with IllegalState exception if shutdown happened
+     */
+    private <T> LightFuture<T> submit(PoolTask<T> task) {
+        synchronized (tasksQueue) {
+            if (shutdown) {
+                task.reject(new IllegalStateException("Shutdown happened. No more tasks accepted"));
+            }
+
+            tasksQueue.add(task);
+            return task;
+        }
     }
 
     /**
      * Interrupts all threads in pool.
      * Running now tasks will be finished, but no more will start execution
      * Not waiting for current tasks to finish
-     * There may remain tasks in queue, which never will start execution
+     * There may remain tasks in queue, they'll be rejected with IllegalState exception
      */
     public void shutdown() {
         shutdown = true;
         for (Thread thread : threads) {
             thread.interrupt();
         }
+        synchronized (tasksQueue) {
+            try {
+                while (!tasksQueue.isEmpty()) {
+                    PoolTask<?> task = tasksQueue.take();
+                    task.reject(new IllegalStateException("Shutdown happened. No more tasks accepted"));
+                }
+            } catch (InterruptedException exception) {
+                //We do not want to leave ThreadPool in inconsistent state
+                throw new RuntimeException("Thread was interrupted during ThreadPool shutdown", exception);
+            }
+        }
+    }
+
+    /**
+     * Awaits for all threads in thread pool to finish their execution.
+     * @throws InterruptedException if current thread was interrupted while waiting
+     */
+    public void awaitTermination() throws InterruptedException {
+        terminationLatch.await();
     }
 
     /** Worker of the pool.
@@ -82,7 +120,7 @@ public class ThreadPool {
         @Override
         public void run() {
             try {
-                while (!Thread.interrupted()) {
+                while (!Thread.interrupted() && !shutdown) {
                     PoolTask<?> task = tasksQueue.take();
                     task.makeReady();
                 }
@@ -90,6 +128,8 @@ public class ThreadPool {
             } catch (InterruptedException e) {
                 //Thread execution interrupted
                 //Thread stops working
+            } finally {
+                terminationLatch.countDown();
             }
         }
     }
@@ -111,16 +151,18 @@ public class ThreadPool {
         }
 
         private void makeReady() {
-            try {
-                result = supplier.get();
-            } catch (Exception exception) {
-                this.exception = exception;
+            if (!isReady) {
+                try {
+                    result = supplier.get();
+                } catch (Exception exception) {
+                    this.exception = exception;
+                }
             }
             supplier = null;
 
             isReady = true;
             synchronized (applyAfter) {
-                applyAfter.forEach(task -> tasksQueue.add(task));
+                applyAfter.forEach(ThreadPool.this::submit);
             }
             synchronized (this) {
                 notifyAll();
@@ -153,6 +195,12 @@ public class ThreadPool {
             return result;
         }
 
+        private void reject(Exception exception) {
+            this.exception = exception;
+            isReady = true;
+            makeReady();
+        }
+
         @Override
         public <R> LightFuture<R> thenApply(@NotNull Function<? super T, R> function) {
             var task = new PoolTask<>(() -> {
@@ -163,11 +211,11 @@ public class ThreadPool {
                 }
             });
             if (isReady) {
-                tasksQueue.add(task);
+                submit(task);
             } else {
                 synchronized (applyAfter) {
                     if (isReady) {
-                        tasksQueue.add(task);
+                        submit(task);
                     } else {
                         applyAfter.add(task);
                     }

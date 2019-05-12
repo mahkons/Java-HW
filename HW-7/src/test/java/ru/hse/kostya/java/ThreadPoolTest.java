@@ -133,9 +133,16 @@ public class ThreadPoolTest {
         threadPool.shutdown();
         assertThrows(IllegalStateException.class, () -> threadPool.submit(() -> 239));
 
+        threadPool.awaitTermination();
+
         for (int i = 0; i < 1000; i++) {
             if (tasksBeforeShutdown.get(i).isReady()) {
-                assertEquals(Integer.valueOf(i), tasksBeforeShutdown.get(i).get());
+                try {
+                    assertEquals(Integer.valueOf(i), tasksBeforeShutdown.get(i).get());
+
+                } catch (LightExecutionException exception) {
+                    assertEquals(exception.getCause().getClass(), IllegalStateException.class);
+                }
             }
         }
     }

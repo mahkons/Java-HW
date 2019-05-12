@@ -33,4 +33,11 @@ public class BlockingQueue<T> {
         return queue.remove(0);
     }
 
+    /**
+     *  Checks whether queue empty now.
+     */
+    public boolean isEmpty() {
+        return queue.isEmpty();
+    }
+
 }
