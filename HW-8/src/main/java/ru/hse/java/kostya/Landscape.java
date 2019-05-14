@@ -25,7 +25,7 @@ public class Landscape implements Sprite {
     private final GraphicsContext graphicsContext;
 
     /**
-     * Creates landscape, by creating lines in consists of.
+     * Creates landscape, by creating lines that makes it up.
      */
     public Landscape(@NotNull GraphicsContext graphicsContext) {
         this.graphicsContext = graphicsContext;
