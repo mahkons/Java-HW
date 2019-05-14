@@ -3,12 +3,23 @@ package ru.hse.java.kostya;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-import java.util.List;
-
-import static ru.hse.java.kostya.Bullet.BulletType.SMALL;
-
+/**
+ * Game sprite that moves when updated
+ *  and explodes when find itself below landscape.
+ * Maintains velocity taking gravity into account
+ */
 public class Bullet implements Sprite {
 
+    /**
+     * Radius in meters of bullet image.
+     */
+    public static final double BULLET_RADIUS = 0.5;
+
+    /**
+     * Type of bullet.
+     * Velocity on creating depends on weight
+     * And affected area on explosion depends on amplitude
+     */
     public enum BulletType {
         SMALL(1, 1.5),
         MEDIUM(2, 2),
@@ -22,17 +33,12 @@ public class Bullet implements Sprite {
             this.weight = weight;
         }
 
-        public static BulletType typeByInt(int value) {
-            switch (value) {
-                case 0:
-                    return SMALL;
-                case 1:
-                    return MEDIUM;
-                case 2:
-                    return HUGE;
-                default:
-                    throw new IllegalArgumentException("only values 1, 2, 3 allowed adn actual value is:" + value);
-            }
+        /**
+         * Returns BulletType by it's string representation.
+         * Case insensitive
+         */
+        public static BulletType typeByString(String value) {
+            return valueOf(value.toUpperCase());
         }
 
         public double getWeight() {
@@ -53,6 +59,11 @@ public class Bullet implements Sprite {
 
     private final Landscape landscape;
 
+    /**
+     * Creates bullet on given position in Meters.
+     * Velocity directed as angle and has module equal
+     *  to given power divided by bullet weight which depends on it's type
+     */
     public Bullet(BulletType type, double positionX, double positionY, double power, double angle,
                   Landscape landscape) {
         this.type = type;
@@ -69,6 +80,11 @@ public class Bullet implements Sprite {
         return Math.sqrt((positionX - x) * (positionX - x) + (positionY - y) * (positionY - y));
     }
 
+    /**
+     * Destroys aim if it is in affected area of bullet,
+     *  which depends on it's type.
+     * Creates Boom object on the same position and radius dependent on bullet amplitude
+     */
     public Boom explode(Aim aim) {
         if (distanceToAim(aim.getPositionX(), aim.getPositionY()) < type.amplitude) {
             aim.destroy();
@@ -76,12 +92,20 @@ public class Bullet implements Sprite {
         return new Boom(positionX, positionY, type.getAmplitude());
     }
 
+    /**
+     * Draws circle on bullet position.
+     * Color is BLACK and radius equals to BULLET_RADIUS
+     */
     @Override
     public void draw(GraphicsContext graphicsContext) {
         graphicsContext.setStroke(Color.BLACK);
-        Painter.drawCircle(positionX, positionY, 0.5, graphicsContext);
+        Painter.drawCircle(positionX, positionY, BULLET_RADIUS, graphicsContext);
     }
 
+    /**
+     * Maintains bullet position and velocity.
+     * Velocity depends on gravity
+     */
     @Override
     public void update(double timeNano) {
         positionX += velocityX * timeNano * 1e-9;

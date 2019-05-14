@@ -13,20 +13,47 @@ import java.util.List;
 
 import static ru.hse.java.kostya.Painter.WIDTH;
 
+/**
+ * Game loop which keeps all game objects, updates their state,
+ *  draws them, parses keyboard input and end the game after aim destroyed.
+ */
 public class GameLoop {
 
+    /**
+     * Gravity that affects bullets.
+     */
     public final static double GRAVITY = 9.81 * 4;
-    public final static double CANNON_POWER = 80;
+    /**
+     * Initial horizontal position of a cannon.
+     */
+    public final static double CANNON_INITIAL_POSITION = WIDTH / 1.5;
+    /**
+     * Initial horizontal position of an aim.
+     */
+    public final static double AIM_POSITION = WIDTH / 5.0;
 
     private final ScorchedEarthGame parent;
 
     private final Timeline timeline = new Timeline();
+    /**
+     * Game frames updated every targetFrameRate milliseconds.
+     */
     private final Duration targetFrameRate = Duration.millis(16); // 60 FPS
     private final GraphicsContext graphicsContext;
 
+    /**
+     * Active movement keyCode.
+     */
     private KeyCode keyCode;
 
+    /**
+     * List of game sprites.
+     * Supposed to be used for drawing and updating them
+     */
     private List<Sprite> spriteList = new ArrayList<>();
+    /**
+     * Separate list for bullets to control their explosion.
+     */
     private List<Bullet> bullets = new ArrayList<>();
 
     private final Cannon cannon;
@@ -34,15 +61,25 @@ public class GameLoop {
     private final Aim aim;
 
     private double lastNanoTime = System.nanoTime();
-    private double afterEndCycleCount = 15;
+    /**
+     * Game shows AFTER_END_CYCLE_COUNT frames after aim destroyed
+     *  and than stops.
+     */
+    public static final double AFTER_END_CYCLE_COUNT = 15;
+    private double afterEndCycleCount = AFTER_END_CYCLE_COUNT;
 
+    /**
+     * Creates all game initial objects.
+     * After construction game can be started at any moment with
+     *  following play method
+     */
     public GameLoop(ScorchedEarthGame parent, GraphicsContext graphicsContext) {
         this.parent = parent;
         this.graphicsContext = graphicsContext;
 
         landscape = new Landscape(graphicsContext);
-        cannon = new Cannon(WIDTH / 1.5, landscape);
-        aim = new Aim(WIDTH / 5.0, landscape.getY(WIDTH / 5.0));
+        cannon = new Cannon(CANNON_INITIAL_POSITION, landscape);
+        aim = new Aim(AIM_POSITION, landscape.getY(AIM_POSITION));
 
         spriteList.add(landscape);
         spriteList.add(cannon);
@@ -73,7 +110,7 @@ public class GameLoop {
                                 cannon.updateAngle(-deltaNanoTime);
                                 break;
                             default:
-                                throw new IllegalStateException("Unknown command");
+                                throw new IllegalArgumentException("Unknown command");
                         }
                     }
 
@@ -114,19 +151,33 @@ public class GameLoop {
         timeline.getKeyFrames().add(keyFrame);
     }
 
+    /**
+     * Adds new sprite.
+     */
     public void addSprite(Sprite sprite) {
         spriteList.add(sprite);
     }
 
+    /**
+     * Starts frames changing.
+     */
     public void play() {
         timeline.play();
     }
 
+    /**
+     * Changes bulletType of cannon.
+     */
     public void setBulletType(Bullet.BulletType type) {
         cannon.setBulletType(type);
     }
 
 
+    /**
+     * Parses pressed key.
+     * If it is ENTER key ask cannon to fire a bullet
+     * if it is a movement key, makes it active key
+     */
     public void pressKey(KeyCode keyCode) {
         if (keyCode == KeyCode.ENTER) {
             final Bullet bullet = cannon.fire();
@@ -140,6 +191,10 @@ public class GameLoop {
         }
     }
 
+    /**
+     * If on current moment given key is active,
+     *  no key becomes active.
+     */
     public void releaseKey(KeyCode keyCode) {
         if (this.keyCode == keyCode) {
             this.keyCode = null;

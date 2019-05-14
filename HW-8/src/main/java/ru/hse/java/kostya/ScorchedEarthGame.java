@@ -17,15 +17,33 @@ import javafx.scene.paint.Stop;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+/**
+ * Game inspired by ScorchedEarthVideoGame.
+ * To achieve victory player needs to destroy an aim with bullets,
+ *  which he can fire from cannon with ENTER key
+ * Player can change bullet types
+ * PLayer can move cannon using LEFT and RIGHT keys
+ *  and change cannon's angle using UP and DOWN keys
+ */
 public class ScorchedEarthGame extends Application {
 
+    /**
+     * Preferred width of screen in pixels, with which it is created
+     */
     private static final int PREFERRED_WIDTH = 1200;
+    /**
+     * Preferred height of screen in pixels, with which it is created
+     */
     private static final int PREFERRED_HEIGHT = 800;
 
     private Scene primaryScene;
 
+    /**
+     * Creates scene, game objects,
+     *  shows them to player and starts game loop.
+     */
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         primaryStage.setTitle("Scorched earth");
         var center = new GridPane();
         center.setPrefSize(PREFERRED_WIDTH, PREFERRED_HEIGHT);
@@ -38,9 +56,9 @@ public class ScorchedEarthGame extends Application {
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
 
         var top = new HBox();
-        var comboBox = new ComboBox<>(FXCollections.observableArrayList(
-                "Small", "Medium", "Huge")
-        );
+        var bulletTypesList = FXCollections.observableArrayList(
+                "Small", "Medium", "Huge");
+        var comboBox = new ComboBox<>(bulletTypesList);
         comboBox.setPrefSize(125, 50);
         top.getChildren().add(comboBox);
         center.getChildren().add(top);
@@ -54,7 +72,7 @@ public class ScorchedEarthGame extends Application {
         var gameLoop = new GameLoop(this, graphicsContext);
 
         comboBox.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
-            gameLoop.setBulletType(Bullet.BulletType.typeByInt(newValue.intValue()));
+            gameLoop.setBulletType(Bullet.BulletType.typeByString(bulletTypesList.get(newValue.intValue())));
             center.requestFocus();
         });
         comboBox.setValue("Medium");
@@ -68,6 +86,9 @@ public class ScorchedEarthGame extends Application {
 
     }
 
+    /**
+     * Shows game end screen with congratulation text only.
+     */
     public void showEndScreen() {
         var endLabel = new Label("Congratulations, You won!");
         endLabel.setFont(new Font(50));
