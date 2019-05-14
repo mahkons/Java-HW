@@ -20,3 +20,12 @@
 workspace.xml
 usage.statistics.xml
 tasks.xml
+
+#java
+*.class
+
+#.idea direcory
+.idea/
+
+#gradle
+.gradle
