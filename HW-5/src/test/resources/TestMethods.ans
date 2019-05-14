@@ -1,0 +1,20 @@
+public class TestMethods extends Object {
+
+     int evenBetterOne(int arg0) {
+        throw new UnsupportedOperationException();
+    }
+
+     int superMethod() {
+        throw new UnsupportedOperationException();
+    }
+
+    private TestMethods() {
+        throw new UnsupportedOperationException();
+    }
+
+    private void hardOne(int arg0, List<String> arg1) {
+        throw new UnsupportedOperationException();
+    }
+
+
+}

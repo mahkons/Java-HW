@@ -1,0 +1,55 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+        maven {
+            url 'http://dl.bintray.com/jetbrains/intellij-plugin-service'
+        }
+
+    }
+    dependencies {
+        classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.5.0-SNAPSHOT"
+    }
+}
+
+plugins {
+    id 'java'
+    id 'application'
+    id "org.jetbrains.intellij" version "0.4.2"
+}
+
+apply plugin:'application'
+mainClassName = "ru.hse.kostya.java.Main"
+
+apply plugin: 'org.jetbrains.intellij'
+apply plugin: 'java'
+
+group 'ru.hse.kostya'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile('org.junit.jupiter:junit-jupiter-api:5.3.2')
+    testRuntime('org.junit.jupiter:junit-jupiter-engine:5.3.2')
+    compile('org.jetbrains:annotations:16.0.2')
+    compile 'org.mongodb:mongodb-driver:3.4.3'
+    compile 'xyz.morphia.morphia:core:1.4.0'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events 'PASSED', 'FAILED', 'SKIPPED'
+    }
+}
+
+run{
+    standardInput = System.in
+}
