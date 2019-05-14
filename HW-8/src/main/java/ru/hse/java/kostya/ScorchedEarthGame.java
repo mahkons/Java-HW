@@ -28,11 +28,11 @@ import javafx.stage.Stage;
 public class ScorchedEarthGame extends Application {
 
     /**
-     * Preferred width of screen in pixels, with which it is created
+     * Preferred width of screen in pixels, with which it is created.
      */
     private static final int PREFERRED_WIDTH = 1200;
     /**
-     * Preferred height of screen in pixels, with which it is created
+     * Preferred height of screen in pixels, with which it is created.
      */
     private static final int PREFERRED_HEIGHT = 800;
 
@@ -53,8 +53,6 @@ public class ScorchedEarthGame extends Application {
         canvas.widthProperty().bind(center.widthProperty());
         canvas.heightProperty().bind(center.heightProperty());
 
-        GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
-
         var top = new HBox();
         var bulletTypesList = FXCollections.observableArrayList(
                 "Small", "Medium", "Huge");
@@ -69,9 +67,11 @@ public class ScorchedEarthGame extends Application {
         primaryStage.show();
         primaryScene = scene;
 
+        GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
         var gameLoop = new GameLoop(this, graphicsContext);
 
-        comboBox.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+        comboBox.getSelectionModel().selectedIndexProperty().addListener(
+                (observable, oldValue, newValue) -> {
             gameLoop.setBulletType(Bullet.BulletType.typeByString(bulletTypesList.get(newValue.intValue())));
             center.requestFocus();
         });

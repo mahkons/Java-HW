@@ -15,18 +15,20 @@ public class Painter {
     /**
      * Width of screen in meters.
      */
-    public final static double WIDTH = 48.0; //In meters
+    public static final double WIDTH = 48.0; //In meters
     /**
      * Height of screen in meters.
      */
-    public final static double HEIGHT = 32.0; //In meters
+    public static final double HEIGHT = 32.0; //In meters
 
     /**
      * Adds line with given in meters parameters.
      * Binds it to given graphicsContext's canvas to allow resizing
      */
-    public static Line addLine(double startX, double startY, double endX, double endY, GraphicsContext graphicsContext) {
-        final var line = new Line(widthToPixels(startX, graphicsContext), heightToPixels(startY, graphicsContext),
+    public static Line addLine(double startX, double startY, double endX, double endY,
+                               GraphicsContext graphicsContext) {
+        final var line = new Line(
+                widthToPixels(startX, graphicsContext), heightToPixels(startY, graphicsContext),
                 widthToPixels(endX, graphicsContext), heightToPixels(endY, graphicsContext));
         line.startXProperty().bind(widthToPixelsProperty(startX, graphicsContext));
         line.startYProperty().bind(heightToPixelsProperty(startY, graphicsContext));
@@ -38,8 +40,10 @@ public class Painter {
     /**
      * Draw line with given in meters parameters.
      */
-    public static void drawLine(double startX, double startY, double endX, double endY, GraphicsContext graphicsContext) {
-        graphicsContext.strokeLine(widthToPixels(startX, graphicsContext), heightToPixels(startY, graphicsContext),
+    public static void drawLine(double startX, double startY, double endX, double endY,
+                                GraphicsContext graphicsContext) {
+        graphicsContext.strokeLine(
+                widthToPixels(startX, graphicsContext), heightToPixels(startY, graphicsContext),
                 widthToPixels(endX, graphicsContext), heightToPixels(endY, graphicsContext));
     }
 
@@ -53,10 +57,13 @@ public class Painter {
     /**
      * Draws circle with parameters given in meters.
      */
-    public static void drawCircle(double centerX, double centerY, double radius, GraphicsContext graphicsContext) {
-        graphicsContext.fillOval(widthToPixels(centerX, graphicsContext), heightToPixels(centerY, graphicsContext),
+    public static void drawCircle(double centerX, double centerY, double radius,
+                                  GraphicsContext graphicsContext) {
+        graphicsContext.fillOval(
+                widthToPixels(centerX, graphicsContext), heightToPixels(centerY, graphicsContext),
                 widthToPixels(radius, graphicsContext), widthToPixels(radius, graphicsContext));
-        graphicsContext.strokeOval(widthToPixels(centerX, graphicsContext), heightToPixels(centerY, graphicsContext),
+        graphicsContext.strokeOval(
+                widthToPixels(centerX, graphicsContext), heightToPixels(centerY, graphicsContext),
                 widthToPixels(radius, graphicsContext), widthToPixels(radius, graphicsContext));
     }
 

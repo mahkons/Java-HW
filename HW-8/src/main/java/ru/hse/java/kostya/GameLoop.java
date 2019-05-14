@@ -22,15 +22,15 @@ public class GameLoop {
     /**
      * Gravity that affects bullets.
      */
-    public final static double GRAVITY = 9.81 * 4;
+    public static final double GRAVITY = 9.81 * 4;
     /**
      * Initial horizontal position of a cannon.
      */
-    public final static double CANNON_INITIAL_POSITION = WIDTH / 1.5;
+    public static final double CANNON_INITIAL_POSITION = WIDTH / 1.5;
     /**
      * Initial horizontal position of an aim.
      */
-    public final static double AIM_POSITION = WIDTH / 5.0;
+    public static final double AIM_POSITION = WIDTH / 5.0;
 
     private final ScorchedEarthGame parent;
 
@@ -185,8 +185,8 @@ public class GameLoop {
             bullets.add(bullet);
             return;
         }
-        if (keyCode == KeyCode.LEFT || keyCode == KeyCode.RIGHT ||
-        keyCode == KeyCode.UP || keyCode == KeyCode.DOWN) {
+        if (keyCode == KeyCode.LEFT || keyCode == KeyCode.RIGHT
+                || keyCode == KeyCode.UP || keyCode == KeyCode.DOWN) {
             this.keyCode = keyCode;
         }
     }

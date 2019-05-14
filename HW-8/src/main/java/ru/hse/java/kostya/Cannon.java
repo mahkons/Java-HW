@@ -16,15 +16,15 @@ public class Cannon implements Sprite {
     /**
      * Power with which knew bullets made by cannon.
      */
-    public final static double CANNON_POWER = 80;
+    public static final double CANNON_POWER = 80;
     /**
      * Speed of cannons horizontal movement.
      */
-    public final static double CANNON_MOVEMENT_SPEED = 10;
+    public static final double CANNON_MOVEMENT_SPEED = 10;
     /**
      * Speed of cannon rotation.
      */
-    public final static double CANNON_ROTATION_SPEED = 1;
+    public static final double CANNON_ROTATION_SPEED = 1;
 
     private double positionX;
     private double angle = Math.PI / 2;
@@ -34,7 +34,7 @@ public class Cannon implements Sprite {
 
     /**
      * Creates Cannon with given position in meters just above landscape
-     *  and vertical angle
+     *  and vertical angle.
      */
     public Cannon(double positionX, Landscape landscape) {
         this.positionX = positionX;
@@ -123,7 +123,8 @@ public class Cannon implements Sprite {
         double directionY = Math.sin(angle);
         Painter.drawLine(
                 positionX + directionX * 1, landscape.getY(positionX) + directionY * 1,
-                positionX - directionX * 3, landscape.getY(positionX) - directionY * 3, graphicsContext);
+                positionX - directionX * 3, landscape.getY(positionX) - directionY * 3,
+                graphicsContext);
     }
 
     /**

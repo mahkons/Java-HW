@@ -37,7 +37,8 @@ public class Landscape implements Sprite {
         addLine(42, 16, 48, 26, graphicsContext);
     }
 
-    private void addLine(double startX, double startY, double endX, double endY, GraphicsContext graphicsContext) {
+    private void addLine(double startX, double startY, double endX, double endY,
+                         GraphicsContext graphicsContext) {
         lines.add(Painter.addLine(startX, startY, endX, endY, graphicsContext));
     }
 

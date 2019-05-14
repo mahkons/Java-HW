@@ -12,7 +12,7 @@ public class Boom implements Sprite {
     /**
      * Time in nanoseconds during which boom will remain alive.
      */
-    public final static double LIFE_TIME = 5e8;
+    public static final double LIFE_TIME = 5e8;
     private double timeLeft = LIFE_TIME;
     private boolean alive = true;
 
@@ -44,7 +44,7 @@ public class Boom implements Sprite {
 
     /**
      * Tracks life time of object and
-     *  destroys it, if no time left
+     *  destroys it, if no time left.
      */
     @Override
     public void update(double timeNano) {
