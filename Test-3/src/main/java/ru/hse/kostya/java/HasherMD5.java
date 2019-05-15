@@ -1,5 +1,7 @@
 package ru.hse.kostya.java;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -19,7 +21,7 @@ public class HasherMD5 {
 
     private static final int BUFFER_SIZE = 4096;
 
-    public static byte[] hash(Path path) throws NoSuchAlgorithmException, IOException {
+    public static byte[] hash(@NotNull Path path) throws NoSuchAlgorithmException, IOException {
         if (Files.isDirectory(path)) {
             return directoryHash(path);
         }
@@ -30,7 +32,7 @@ public class HasherMD5 {
         return new byte[0];
     }
 
-    public static byte[] hashMultithreaded(Path path) {
+    public static byte[] hashMultithreaded(@NotNull Path path) {
         return (new ForkJoinPool().invoke(new HasherTask(path)));
     }
 
@@ -38,7 +40,8 @@ public class HasherMD5 {
         MessageDigest messageDigest = MessageDigest.getInstance("MD5");
 
         messageDigest.update(path.getFileName().toString().getBytes());
-        for (Path filePath : Files.walk(path).collect(Collectors.toList())) {
+        for (Path filePath : Files.walk(path)
+                .filter(filePath -> path != filePath).collect(Collectors.toList())) {
             messageDigest.update(hash(filePath));
         }
         return messageDigest.digest();
@@ -75,6 +78,7 @@ public class HasherMD5 {
                 }
             } catch (Exception exception) {
                 //AAAA panic
+                System.out.println(exception.getMessage());
                 System.exit(1);
             }
             //ignore
@@ -87,7 +91,8 @@ public class HasherMD5 {
 
             messageDigest.update(path.getFileName().toString().getBytes());
 
-            for (HasherTask hash : invokeAll(Files.walk(path).map(HasherTask::new).collect(Collectors.toList()))) {
+            for (HasherTask hash : invokeAll(Files.walk(path).filter(filePath -> path != filePath)
+                    .map(HasherTask::new).collect(Collectors.toList()))) {
                 messageDigest.update(hash.get());
             }
 
