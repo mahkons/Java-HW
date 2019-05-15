@@ -16,6 +16,7 @@ buildscript {
 
 plugins {
     id 'java'
+    id 'application'
     id "org.jetbrains.intellij" version "0.4.2"
 }
 
@@ -27,6 +28,8 @@ group 'ru.hse.java'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 12
+
+mainClassName = 'ru.hse.java.kostya.Main'
 
 repositories {
     mavenCentral()
