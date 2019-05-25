@@ -19,18 +19,37 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.stream.Collectors;
 
+/**
+ * Class for loading compiled classes and launching there tests methods.
+ * Tests methods are annotated with {@code Test}
+ * Annotations {@code BeforeClass, AfterClass, Before, After} used according to there documentation
+ * Main method takes path to {@code .class or .jar} file as an argument and launches all tests
+ *  in those classes and outputs information about invocation result.
+ * Tests run parallel in number of available processors threads
+ */
 public class TestsLauncher {
 
+    /**
+     * Number of threads in ThreadPool, which is used for test methods invocation.
+     */
     private static int parallelism = Runtime.getRuntime().availableProcessors();
     private static ExecutorService threadPool = Executors.newFixedThreadPool(parallelism);
 
+    /**
+     * Loads class on the specified path.
+     */
     private static Class<?> loadClass(Path path) throws MalformedURLException, ClassNotFoundException {
-        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { path.toUri().toURL() });
-        return classLoader.loadClass(path.toString());
+        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { path.getParent().toUri().toURL() });
+        String fileName = path.getFileName().toString();
+        fileName = fileName.substring(0, fileName.length() - ".class".length());
+        return classLoader.loadClass(fileName);
     }
 
+    /**
+     * Loads all classes from specified jar file.
+     */
     private static List<Class<?>> loadClassesFromJar(Path path) throws IOException, ClassNotFoundException {
-        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { path.toUri().toURL() });
+        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { path.getParent().toUri().toURL() });
 
         List<Class<?>> classes = new ArrayList<>();
         var jarFile = new JarInputStream(new FileInputStream(path.toFile()));
@@ -43,21 +62,32 @@ public class TestsLauncher {
         return classes;
     }
 
+    /**
+     * Takes path to exactly one {@code .class or .jar} file and launches all tests on the specified path.
+     * Test methods should be annotated with {@code Test} annotation.
+     * There is a possibility to force some other methods be invoked before/after all class
+     *  initialisation or each test method invocation. Annotation from {@code ru.hse.kostya.annotations} should
+     *  be used to achieve that functionality
+     *  Class should have an accessible constructor without parameters
+     *  If for any class it's initialization or running methods annotated with {@code AfterClass or BeforeClass}
+     *      will fail, program will exit immediately
+     */
     public static void main(String[] args) {
         if (args.length != 1) {
             throw new IllegalArgumentException("Expected one argument: path to file with tests");
         }
         Path path = Paths.get(args[0]);
+        System.out.println(args[0]);
         if (!path.toFile().exists()) {
             throw new IllegalArgumentException("File does not exist");
         }
-        if (!path.endsWith(".class") && !path.endsWith(".jar")) {
+        if (!path.toString().endsWith(".class") && !path.toString().endsWith(".jar")) {
             throw new IllegalArgumentException("Test should be .class or .java file");
         }
 
         List<Class<?>> classes = new ArrayList<>();
 
-        if (path.endsWith(".class")) {
+        if (path.toString().endsWith(".class")) {
             try {
                 classes.add(loadClass(path));
             } catch (ClassNotFoundException e) {
@@ -80,10 +110,10 @@ public class TestsLauncher {
         }
 
 
-        for (Class<?> aClass : classes) {
-            System.out.println("Invocation of " + aClass.getName() + "tests started");
+        for (Class<?> clazz : classes) {
+            System.out.println("Invocation of " + clazz.getName() + "tests started");
             try {
-                TestOfClassResult testResult = invokeTestMethods(aClass);
+                TestOfClassResult testResult = invokeTestMethods(clazz);
                 System.out.println("Time gone: " + testResult.getTimeGone() + " milliseconds.");
                 System.out.println("Tests passed " + testResult.getSuccess());
                 System.out.println("Tests failed " + testResult.getFailed());
@@ -95,16 +125,27 @@ public class TestsLauncher {
                 System.out.println("Unexpected exception during test method invocation");
                 System.exit(8);
             }
-            System.out.println("Invocation of " + aClass.getName() + "tests ended");
+            System.out.println("Invocation of " + clazz.getName() + "tests ended");
         }
     }
 
+    /**
+     * Gets all accessible methods from given testClass, which are annotated with specified annotation.
+     */
     private static List<Method> getTestingMethods(Class<?> testClass, Class<? extends Annotation> annotation) {
         return Arrays.stream(testClass.getMethods())
                 .filter(x -> x.isAnnotationPresent(annotation)).collect(Collectors.toList());
     }
 
-    public static TestOfClassResult invokeTestMethods(Class<?> testClass) throws InterruptedException, ExecutionException {
+    /**
+     * Invokes all tests method from class.
+     * Outputs information about invocation
+     * There may be created few instances of class and different tests will run on them concurrently
+     * Returns {@code TestOfClassResult} which contains amount of passes, failed and ignored tests
+     *  and time used for invocation
+     */
+    public static TestOfClassResult invokeTestMethods(Class<?> testClass)
+            throws InterruptedException, ExecutionException {
 
         List<Method> beforeClassMethods = getTestingMethods(testClass, BeforeClass.class);
         List<Method> afterClassMethods = getTestingMethods(testClass, AfterClass.class);
@@ -117,7 +158,8 @@ public class TestsLauncher {
 
 
         List<InvokeTask> tasks = testMethods.stream()
-                .map(testMethod -> new InvokeTask(testMethod, classByThread, testClass, beforeClassMethods, beforeTestMethod, afterTestMethod))
+                .map(testMethod -> new InvokeTask(testMethod, classByThread, testClass,
+                        beforeClassMethods, beforeTestMethod, afterTestMethod))
                 .collect(Collectors.toList());
 
         long startMillis = System.currentTimeMillis();
@@ -139,7 +181,8 @@ public class TestsLauncher {
             }
         }
         for (Object classInstance : classByThread.values()) {
-            afterClassMethods.forEach(afterClassMethod -> invokeClassMethod(afterClassMethod, classInstance, "AfterClass", 5, 6));
+            afterClassMethods.forEach(afterClassMethod -> invokeClassMethod(afterClassMethod,
+                    classInstance, "AfterClass", 5, 6));
         }
         long stopMillis = System.currentTimeMillis();
         testResult.setTimeGone(stopMillis - startMillis);
@@ -147,21 +190,32 @@ public class TestsLauncher {
         return testResult;
     }
 
-    private static void invokeClassMethod(Method method, Object testObject, String annotationName, int exitCodeIllegalAccess, int exitCodeInvocationException) {
+    /**
+     * Invokes method on given object and exits in case of fail.
+     */
+    private static void invokeClassMethod(Method method, Object testObject, String annotationName,
+                                          int exitCodeIllegalAccess, int exitCodeInvocationException) {
         try {
             method.invoke(testObject);
         } catch (IllegalAccessException e) {
-            System.out.println("Cannot access method annotated with " + annotationName + ": " + e.getMessage());
+            System.out.println("Cannot access method annotated with " + annotationName
+                    + ": " + e.getMessage());
             System.exit(exitCodeIllegalAccess);
         } catch (InvocationTargetException e) {
-            System.out.println("Exception occurred during running method annotated with " + annotationName + ": " + e.getMessage());
+            System.out.println("Exception occurred during running method annotated with "
+                    + annotationName + ": " + e.getMessage());
             System.exit(exitCodeInvocationException);
         }
     }
 
+    /**
+     * Method invocation task, used in threadPool in {@code invokeTestMethods} method.
+     * Returns {@code TestInvocationResult} instance with information about invocation
+     */
     private static class InvokeTask implements Callable<TestInvocationResult> {
 
-        //thread id's are unique inside one jvm, unless we specify them. And ThreadPool doesn't specify them.
+        //thread id's are unique inside one jvm, unless we specify them.
+        // And ThreadPool doesn't specify them.
         private Map<Long, Object> classByThread;
         private Class<?> testClass;
         private List<Method> beforeClassList;
@@ -175,7 +229,7 @@ public class TestsLauncher {
         private long startMillis;
         private long stopMillis;
 
-        public InvokeTask(Method testMethod, Map<Long, Object> classByThread,
+        private InvokeTask(Method testMethod, Map<Long, Object> classByThread,
                           Class<?> testClass, List<Method> beforeClassList,
                           List<Method> beforeList, List<Method> afterList) {
             this.classByThread = classByThread;
@@ -186,14 +240,21 @@ public class TestsLauncher {
             this.afterList = afterList;
         }
 
+        /**
+         * Invokes method.
+         * In case of fail writes reason to {@code invocationResult} variable
+         *  and sets {@code} success to {@code false}
+         */
         private void invokeMethod(Method method, Object testObject, String annotationName) {
             try {
                 method.invoke(testObject);
             } catch (IllegalAccessException e) {
-                invocationResult.append("Cannot access method annotated with ").append(annotationName).append(": ").append(e.getMessage()).append("\n");
+                invocationResult.append("Cannot access method annotated with ")
+                        .append(annotationName).append(": ").append(e.getMessage()).append("\n");
                 success = false;
             } catch (InvocationTargetException e) {
-                invocationResult.append("Failed to run method annotated with ").append(annotationName).append(": ").append(e.getMessage()).append("\n");
+                invocationResult.append("Failed to run method annotated with ")
+                        .append(annotationName).append(": ").append(e.getMessage()).append("\n");
                 success = false;
             }
         }
@@ -203,7 +264,8 @@ public class TestsLauncher {
             Test testAnnotation = testMethod.getAnnotation(Test.class);
             if (!testAnnotation.ignore().equals("")) {
                 return  new TestInvocationResult("For class " + testClass.getName() + " invocation of test "
-                        + testMethod.getName() + " ignored with message: " + testAnnotation.ignore(), TestInvocationResult.InvocationCode.IGNORE, 0);
+                        + testMethod.getName() + " ignored with message: " + testAnnotation.ignore(),
+                        TestInvocationResult.InvocationCode.IGNORE, 0);
             }
 
             Object testObject = classByThread.computeIfAbsent(Thread.currentThread().getId(), i -> {
@@ -215,7 +277,8 @@ public class TestsLauncher {
                     System.out.println(testClass.getName() + " has no available constructor without parameters");
                     System.exit(1);
                 } catch (InstantiationException | InvocationTargetException e) {
-                    System.out.println("Failed to make an instance of class: " + testClass.getName() + " due to " + e.getMessage());
+                    System.out.println("Failed to make an instance of class: " + testClass.getName()
+                            + " due to " + e.getMessage());
                     System.exit(2);
                 }
 
@@ -241,11 +304,13 @@ public class TestsLauncher {
                 success = false;
             } catch (InvocationTargetException e) {
                 if (testAnnotation.expected() != e.getTargetException().getClass()) {
-                    invocationResult.append("Test finished with wrong exception. Expected ").append(testAnnotation.expected().getName())
-                            .append(". Received: ").append(e.getTargetException().getClass().getName()).append("\n");
+                    invocationResult.append("Test finished with wrong exception. Expected ")
+                            .append(testAnnotation.expected().getName()).append(". Received: ")
+                            .append(e.getTargetException().getClass().getName()).append("\n");
                     success = false;
                 } else {
-                    invocationResult.append("Test finished successfully with expected exception: ").append(testAnnotation.expected().getName()).append("\n");
+                    invocationResult.append("Test finished successfully with expected exception: ")
+                            .append(testAnnotation.expected().getName()).append("\n");
                 }
             }
 
@@ -257,10 +322,17 @@ public class TestsLauncher {
                     + (success ? " finished successfully\n" : " failed\n")
                     + "With message: " + invocationResult
                     + "In time: " + (stopMillis - startMillis) + " milliseconds.";
-            return new TestInvocationResult(fullMessage, (success ? TestInvocationResult.InvocationCode.SUCCESS : TestInvocationResult.InvocationCode.FAIL), stopMillis - startMillis);
+            return new TestInvocationResult(fullMessage,
+                    (success ? TestInvocationResult.InvocationCode.SUCCESS
+                            : TestInvocationResult.InvocationCode.FAIL),
+                    stopMillis - startMillis);
         }
     }
 
+    /**
+     * Keeps information about test method invocation.
+     * Message, invocation code{@code SUCCESS, FAIL or PASS} and time used for invocation
+     */
     private static class TestInvocationResult {
 
         public enum InvocationCode {
@@ -289,6 +361,11 @@ public class TestsLauncher {
 
     }
 
+    /**
+     * Keeps information about invocation of all methods in class.
+     * Keeps number of succeeded, failed and ignored methods
+     *  and time used for invocation of all methods
+     */
     public static class TestOfClassResult {
         private int success = 0;
         private int failed = 0;
