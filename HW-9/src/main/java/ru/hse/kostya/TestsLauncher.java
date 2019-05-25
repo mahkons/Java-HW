@@ -109,7 +109,7 @@ public class TestsLauncher {
         List<Method> beforeClassMethods = getTestingMethods(testClass, BeforeClass.class);
         List<Method> afterClassMethods = getTestingMethods(testClass, AfterClass.class);
 
-        Map<Long, Object> classByThread = new HashMap<>();
+        Map<Long, Object> classByThread = new ConcurrentHashMap<>();
 
         List<Method> beforeTestMethod = getTestingMethods(testClass, Before.class);
         List<Method> testMethods = getTestingMethods(testClass, Test.class);
@@ -256,7 +256,7 @@ public class TestsLauncher {
                     + ". Invocation of test " + testMethod.getName()
                     + (success ? " finished successfully\n" : " failed\n")
                     + "With message: " + invocationResult
-                    + "\nIn time: " + (stopMillis - startMillis) + " milliseconds.";
+                    + "In time: " + (stopMillis - startMillis) + " milliseconds.";
             return new TestInvocationResult(fullMessage, (success ? TestInvocationResult.InvocationCode.SUCCESS : TestInvocationResult.InvocationCode.FAIL), stopMillis - startMillis);
         }
     }
