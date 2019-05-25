@@ -81,9 +81,13 @@ public class TestsLauncher {
 
 
         for (Class<?> aClass : classes) {
-            System.out.println("Invocation of " + aClass.getName() + "methods started");
+            System.out.println("Invocation of " + aClass.getName() + "tests started");
             try {
-                invokeTestMethods(aClass);
+                TestOfClassResult testResult = invokeTestMethods(aClass);
+                System.out.println("Time gone: " + testResult.getTimeGone() + " milliseconds.");
+                System.out.println("Tests passed " + testResult.getSuccess());
+                System.out.println("Tests failed " + testResult.getFailed());
+                System.out.println("Tests ignored " + testResult.getIgnored());
             } catch (InterruptedException e) {
                 System.out.println("Thread pool worker was interrupted during method invocation");
                 System.exit(7);
@@ -91,7 +95,7 @@ public class TestsLauncher {
                 System.out.println("Unexpected exception during test method invocation");
                 System.exit(8);
             }
-            System.out.println("Invocation of " + aClass.getName() + "methods endeds");
+            System.out.println("Invocation of " + aClass.getName() + "tests ended");
         }
     }
 
@@ -100,7 +104,7 @@ public class TestsLauncher {
                 .filter(x -> x.isAnnotationPresent(annotation)).collect(Collectors.toList());
     }
 
-    public static void invokeTestMethods(Class<?> testClass) throws InterruptedException, ExecutionException {
+    public static TestOfClassResult invokeTestMethods(Class<?> testClass) throws InterruptedException, ExecutionException {
 
         List<Method> beforeClassMethods = getTestingMethods(testClass, BeforeClass.class);
         List<Method> afterClassMethods = getTestingMethods(testClass, AfterClass.class);
@@ -116,13 +120,31 @@ public class TestsLauncher {
                 .map(testMethod -> new InvokeTask(testMethod, classByThread, testClass, beforeClassMethods, beforeTestMethod, afterTestMethod))
                 .collect(Collectors.toList());
 
-        List<Future<String>> invocationResult = threadPool.invokeAll(tasks);
-        for (Future<String> future : invocationResult) {
-            System.out.println(future.get());
+        long startMillis = System.currentTimeMillis();
+        List<Future<TestInvocationResult>> invocationResult = threadPool.invokeAll(tasks);
+        var testResult = new TestOfClassResult();
+
+        for (Future<TestInvocationResult> future : invocationResult) {
+            System.out.println(future.get().getMessage());
+            switch (future.get().getInvocationCode()) {
+                case FAIL:
+                    testResult.addFailed();
+                    break;
+                case IGNORE:
+                    testResult.addIgnored();
+                    break;
+                case SUCCESS:
+                    testResult.addSuccess();
+                    break;
+            }
         }
         for (Object classInstance : classByThread.values()) {
             afterClassMethods.forEach(afterClassMethod -> invokeClassMethod(afterClassMethod, classInstance, "AfterClass", 5, 6));
         }
+        long stopMillis = System.currentTimeMillis();
+        testResult.setTimeGone(stopMillis - startMillis);
+
+        return testResult;
     }
 
     private static void invokeClassMethod(Method method, Object testObject, String annotationName, int exitCodeIllegalAccess, int exitCodeInvocationException) {
@@ -132,14 +154,14 @@ public class TestsLauncher {
             System.out.println("Cannot access method annotated with " + annotationName + ": " + e.getMessage());
             System.exit(exitCodeIllegalAccess);
         } catch (InvocationTargetException e) {
-            System.out.println("Exception occurred during running ethod annotated with " + annotationName + ": " + e.getMessage());
+            System.out.println("Exception occurred during running method annotated with " + annotationName + ": " + e.getMessage());
             System.exit(exitCodeInvocationException);
         }
     }
 
-    private static class InvokeTask implements Callable<String> {
+    private static class InvokeTask implements Callable<TestInvocationResult> {
 
-        //thread id's are unique in given jvm, unless we specify them. And ThreadPool don't.
+        //thread id's are unique inside one jvm, unless we specify them. And ThreadPool doesn't specify them.
         private Map<Long, Object> classByThread;
         private Class<?> testClass;
         private List<Method> beforeClassList;
@@ -177,11 +199,11 @@ public class TestsLauncher {
         }
 
         @Override
-        public String call() {
+        public TestInvocationResult call() {
             Test testAnnotation = testMethod.getAnnotation(Test.class);
             if (!testAnnotation.ignore().equals("")) {
-                return  "For class " + testClass.getName() + " invocation of test "
-                        + testMethod.getName() + " ignored with message: " + testAnnotation.ignore();
+                return  new TestInvocationResult("For class " + testClass.getName() + " invocation of test "
+                        + testMethod.getName() + " ignored with message: " + testAnnotation.ignore(), TestInvocationResult.InvocationCode.IGNORE, 0);
             }
 
             Object testObject = classByThread.computeIfAbsent(Thread.currentThread().getId(), i -> {
@@ -235,7 +257,75 @@ public class TestsLauncher {
                     + (success ? " finished successfully\n" : " failed\n")
                     + "With message: " + invocationResult
                     + "\nIn time: " + (stopMillis - startMillis) + " milliseconds.";
-            return fullMessage;
+            return new TestInvocationResult(fullMessage, (success ? TestInvocationResult.InvocationCode.SUCCESS : TestInvocationResult.InvocationCode.FAIL), stopMillis - startMillis);
+        }
+    }
+
+    private static class TestInvocationResult {
+
+        public enum InvocationCode {
+            SUCCESS,
+            FAIL,
+            IGNORE;
+        }
+
+        private String message;
+        private InvocationCode invocationCode;
+        private long timeMillis;
+
+        public TestInvocationResult(String message, InvocationCode invocationCode, long timeMillis) {
+            this.message = message;
+            this.invocationCode = invocationCode;
+            this.timeMillis = timeMillis;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public InvocationCode getInvocationCode() {
+            return invocationCode;
+        }
+
+    }
+
+    public static class TestOfClassResult {
+        private int success = 0;
+        private int failed = 0;
+        private int ignored = 0;
+
+        private long timeGone;
+
+        public void addSuccess() {
+            success++;
+        }
+
+        public void addFailed() {
+            failed++;
+        }
+
+        public void addIgnored() {
+            ignored++;
+        }
+
+        public int getSuccess() {
+            return success;
+        }
+
+        public int getFailed() {
+            return failed;
+        }
+
+        public int getIgnored() {
+            return ignored;
+        }
+
+        public long getTimeGone() {
+            return timeGone;
+        }
+
+        public void setTimeGone(long timeGone) {
+            this.timeGone = timeGone;
         }
     }
 
