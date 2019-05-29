@@ -13,6 +13,8 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.util.List;
+
 public class PairGame extends Application {
 
     private static final int APP_WIDTH = 1200;
@@ -26,17 +28,16 @@ public class PairGame extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-//        List<String> parameters = getParameters().getRaw();
-//        if (parameters.size() != 1) {
-//            throw new IllegalArgumentException("There should be exactly one parameter: size of field");
-//        }
-//
-//        //throws NumberFormatException
-//        int fieldSize = Integer.parseInt(parameters.get(0));
-//        if (fieldSize < 2 || fieldSize > 10) {
-//            throw new IllegalArgumentException("Field should be an integer between 2 and 10");
-//        }
-        int fieldSize = 3;
+        List<String> parameters = getParameters().getRaw();
+        if (parameters.size() != 1) {
+            throw new IllegalArgumentException("There should be exactly one parameter: size of field");
+        }
+
+        //throws NumberFormatException
+        int fieldSize = Integer.parseInt(parameters.get(0));
+        if (fieldSize < 2 || fieldSize > 10) {
+            throw new IllegalArgumentException("Field should be an integer between 2 and 10");
+        }
 
         primaryStage.setTitle("Pair Game");
         primaryStage.setScene(new Scene(createContent(fieldSize)));
