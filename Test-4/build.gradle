@@ -25,7 +25,7 @@ plugins {
 apply plugin: 'org.jetbrains.intellij'
 apply plugin: 'java'
 
-group 'hse.kostya.java'
+group 'ru.hse.kostya'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 12
@@ -34,7 +34,7 @@ repositories {
     mavenCentral()
 }
 
-//mainClassName = 'ru.hse.java.kostya.ScorchedEarthGame'
+mainClassName = 'ru.hse.kostya.PairGame'
 
 dependencies {
     testCompile('org.junit.jupiter:junit-jupiter-api:5.3.2')
