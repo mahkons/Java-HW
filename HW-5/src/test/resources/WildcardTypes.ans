@@ -1,0 +1,20 @@
+public class WildcardTypes<T, S> extends Object {
+
+     <E extends List<? super T >> T complexOne(Collection<? super Collection<? extends E> > arg0) {
+        throw new UnsupportedOperationException();
+    }
+
+     Collection<? extends T> withReturnValue() {
+        throw new UnsupportedOperationException();
+    }
+
+     void simple(List<? super T > arg0) {
+        throw new UnsupportedOperationException();
+    }
+
+    private WildcardTypes() {
+        throw new UnsupportedOperationException();
+    }
+
+
+}

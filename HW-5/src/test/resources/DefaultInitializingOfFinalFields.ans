@@ -1,0 +1,13 @@
+public class DefaultInitializingOfFinalFields extends Object {
+
+    final List<Integer> l = null;
+    final String s = null;
+    final char c = '\0';
+    final int a = 0;
+    final int[] b = null;
+    private DefaultInitializingOfFinalFields() {
+        throw new UnsupportedOperationException();
+    }
+
+
+}

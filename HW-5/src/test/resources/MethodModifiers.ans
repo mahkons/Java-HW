@@ -1,0 +1,16 @@
+public class MethodModifiers extends Object {
+
+    final int result() {
+        throw new UnsupportedOperationException();
+    }
+
+    private MethodModifiers() {
+        throw new UnsupportedOperationException();
+    }
+
+    private static int a() {
+        throw new UnsupportedOperationException();
+    }
+
+
+}
